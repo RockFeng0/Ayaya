@@ -31,8 +31,8 @@ logger = logging.getLogger(__name__)
     
 @app.route('/')
 def index():
-    return "good"
+    return render_template("index.html")
 
 @app.route('/about')
 def about():
-    return "about"
+    return render_template("about.html")

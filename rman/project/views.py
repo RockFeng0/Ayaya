@@ -31,15 +31,22 @@ class ProjectForm(Form):
     comment = TextField('备注:', [validators.length(1, 128, "备注最多128字符")])
     submit = SubmitField('提交')
     
-@project.route('/basic_info', methods=['GET', 'POST'])
-def basic_info():
+    
+@project.route('/search')
+def search():    
+    all_obj = Project.query.order_by(Project.update_time.desc()).all()    
+    result = [{"name": pj.name, "module":pj.module, "comment": pj.comment} for pj in all_obj]    
+    return make_response(render_template("project/project.html", projects = result))
+    
+@project.route("/update", methods = ["GET","POST"])
+def update():    
     form = ProjectForm(request.form)
     now = datetime.datetime.now()
-    if request.method == "GET":
-        print(form)
-        return render_template('project.html', form=form, projects = Project.query.all())
     
-    elif request.method == "POST" and form.validate():
+    if request.method == "GET":
+        return make_response(render_template("project/project.html", form = form))
+    
+    elif request.method == "POST" and form.validate():        
         project_data = Project.query.filter_by(name = form.name.data, module = form.module.data).first()
         
         if project_data:
@@ -49,6 +56,8 @@ def basic_info():
             db.session.add(project_data)
         db.session.flush()
         db.session.commit()
-        return redirect(url_for("project.basic_info"))
-    
-    
+        return redirect(url_for("project.search"))
+
+@project.route("/delete", methods = ["POST"])
+def delete():
+    pass

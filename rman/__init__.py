@@ -32,10 +32,11 @@ def create_app(env=None):
     nav.register_element('top',Navbar(u'rtsf自动化用例管理',
                                 View(u'主页','index'),
                                 View(u'关于','about'),
-                                Subgroup(u'接口测试',
-                                         View(u'project','project.basic_info'),
+                                Subgroup(u'项目管理',
+                                         View(u'项目列表','project.search'),
                                          Separator(),
-                                         View(u'项目二', 'about'),
+                                         View(u'调试-项目更新', 'project.update'),
+                                         View(u'调试-删除项目', 'project.delete'),
                                          ),
                                 )
                         )
