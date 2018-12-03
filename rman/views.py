@@ -1,0 +1,38 @@
+#! python3
+# -*- encoding: utf-8 -*-
+'''
+Current module: rman.views
+
+Rough version history:
+v1.0    Original version to use
+
+********************************************************************
+    @AUTHOR:  Administrator-Bruce Luo(罗科峰)
+    MAIL:     luokefeng@163.com
+    RCS:      rman.views,  v1.0 2018年11月23日
+    FROM:   2018年11月23日
+********************************************************************
+======================================================================
+
+Provide a function for the automation test
+
+'''
+
+import logging
+
+from . import app
+from flask import render_template
+
+
+# 获取日志操作句柄
+logger = logging.getLogger(__name__)
+
+
+    
+@app.route('/')
+def index():
+    return "good"
+
+@app.route('/about')
+def about():
+    return "about"
