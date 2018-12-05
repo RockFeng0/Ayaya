@@ -22,7 +22,7 @@ from . import project
 from .models import Project, db
 from flask_wtf import Form 
 from wtforms import TextField, SubmitField, validators
-from flask import make_response, request, redirect, url_for, render_template
+from flask import make_response, request, redirect, url_for, render_template, jsonify
 import datetime
 
 class ProjectForm(Form):
@@ -31,24 +31,32 @@ class ProjectForm(Form):
     comment = TextField('备注:', [validators.length(1, 128, "备注最多128字符")])
     submit = SubmitField('提交')
     
+def get_query():
+    return Project.query
+    
+def get_result(result, status=True, message="success" ):
+    return {"status":status, "message":message,"result":result}
     
 @project.route('/search')
-def search():    
-    all_obj = Project.query.order_by(Project.update_time.desc()).all()    
-    result = [{"name": pj.name, "module":pj.module, "comment": pj.comment} for pj in all_obj]    
-    return make_response(render_template("project/project.html", projects = result))
+def search():
+    _query = get_query()  
+    all_obj = _query.order_by(Project.update_time.desc()).all()    
+    result = [{"id":pj.id,"name": pj.name, "module":pj.module, "comment": pj.comment} for pj in all_obj]    
+    return make_response(render_template("project/project.html", projects = get_result(result, message = "search success.")))
+    #return jsonify(msg)
     
 @project.route("/update", methods = ["GET","POST"])
 def update():    
     form = ProjectForm(request.form)
     now = datetime.datetime.now()
-    
+     
     if request.method == "GET":
         return make_response(render_template("project/project.html", form = form))
-    
-    elif request.method == "POST" and form.validate():        
-        project_data = Project.query.filter_by(name = form.name.data, module = form.module.data).first()
-        
+     
+    elif request.method == "POST" and form.validate():
+        _query = get_query()    
+        project_data = _query.filter_by(name = form.name.data, module = form.module.data).first()
+         
         if project_data:
             project_data.update_time = now
         else:
@@ -57,7 +65,36 @@ def update():
         db.session.flush()
         db.session.commit()
         return redirect(url_for("project.search"))
+ 
+@project.route("/detail", methods=["GET"])
+def detail():
+    param = dict(request.args.items())
+    _query = get_query()
+    pj = _query.filter_by(id = param.get("proj_id")).first()
+    if pj:
+        status = True
+        result = {"id":pj.id,"name": pj.name, "module":pj.module, "comment": pj.comment}
+        message = "detail success."
+    else:
+        status = False
+        result = ""
+        message = "do not have the project with proj_id({})".format(param.get("proj_id"))
+    return jsonify(get_result(result, status = status,message = message))
+ 
+@project.route("/delete", methods = ["GET"])
+def delete():    
+    param = dict(request.args.items())    
+    _query = get_query()
+    pj = _query.filter_by(id = param.get("proj_id")).first()
+    result = ""
+    if pj:
+        db.session.delete(pj)
+        db.session.commit()
+        status = True
+        message = "delete success."        
+    else:
+        status = False
+        message = "do not have the project with proj_id({})".format(param.get("proj_id"))
+    return jsonify(get_result(result, status = status,message = message))
 
-@project.route("/delete", methods = ["POST"])
-def delete():
-    pass
+
