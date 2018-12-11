@@ -36,35 +36,44 @@ def get_query():
     
 def get_result(result, status=True, message="success" ):
     return {"status":status, "message":message,"result":result}
-    
+
+@project.route("/form")
+def project_form():
+    form = ProjectForm(request.form)    
+    return make_response(render_template("project/project.html", form = form))
+
 @project.route('/search')
 def search():
     _query = get_query()  
     all_obj = _query.order_by(Project.update_time.desc()).all()    
     result = [{"id":pj.id,"name": pj.name, "module":pj.module, "comment": pj.comment} for pj in all_obj]    
-    return make_response(render_template("project/project.html", projects = get_result(result, message = "search success.")))
-    #return jsonify(msg)
+    #return make_response(render_template("project/project.html", projects = get_result(result, message = "search success.")))
+    return jsonify(get_result(result, message = "search success."))
     
-@project.route("/update", methods = ["GET","POST"])
-def update():    
-    form = ProjectForm(request.form)
-    now = datetime.datetime.now()
-     
-    if request.method == "GET":
-        return make_response(render_template("project/project.html", form = form))
-     
-    elif request.method == "POST" and form.validate():
-        _query = get_query()    
-        project_data = _query.filter_by(name = form.name.data, module = form.module.data).first()
+@project.route("/update", methods = ["POST"])
+def update():
+    param = request.json
+    now = datetime.datetime.now()  
+    _query = get_query()   
+    
+    try:
+        status = True
+        project_data = _query.filter_by(name = param.get("name"), module = param.get("module")).first()
          
         if project_data:
             project_data.update_time = now
+            message = "update success."
         else:
-            project_data = Project(form.name.data, form.module.data, form.comment.data,now,now)
+            project_data = Project(param.get("name"), param.get("module"), param.get("comment"),now,now)
             db.session.add(project_data)
+            message = "add success."
         db.session.flush()
         db.session.commit()
-        return redirect(url_for("project.search"))
+    except Exception as e:
+        message = str(e)
+        status = False        
+    #return redirect(url_for("project.search"))
+    return jsonify(get_result("", status = status, message = message))
  
 @project.route("/detail", methods=["GET"])
 def detail():
@@ -97,4 +106,11 @@ def delete():
         message = "do not have the project with proj_id({})".format(param.get("proj_id"))
     return jsonify(get_result(result, status = status,message = message))
 
-
+@project.after_request
+def after_request(response):    
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+#     response.headers['Access-Control-Allow-Credentials'] = 'true'
+#     response.headers['Access-Control-Allow-Methods'] = '*'    
+#     response.headers['Access-Control-Expose-Headers'] = '*'  
+    return response

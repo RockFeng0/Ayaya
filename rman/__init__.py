@@ -1,6 +1,7 @@
 import logging, importlib
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 from flask_bootstrap import Bootstrap
 from flask_nav import Nav
 from flask_nav.elements import Navbar, View, Subgroup, Separator
@@ -12,7 +13,7 @@ logger = logging.getLogger(__name__)
 logger.addHandler(console)
 logger.setLevel(logging.DEBUG)
 
-
+cors = CORS()
 db = SQLAlchemy()
 bootstrap = Bootstrap()
 nav=Nav()
@@ -27,6 +28,7 @@ def create_app(env=None):
     # 将配置读取到flask对象中
     app.config.from_object(configuration)
     configuration.init_app(app)
+    cors.init_app(app)
     db.init_app(app)
     bootstrap.init_app(app)
     nav.register_element('top',Navbar(u'rtsf自动化用例管理',
