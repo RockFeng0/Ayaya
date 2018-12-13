@@ -46,7 +46,13 @@ def project_form():
 def search():
     _query = get_query()  
     all_obj = _query.order_by(Project.update_time.desc()).all()    
-    result = [{"id":pj.id,"name": pj.name, "module":pj.module, "comment": pj.comment} for pj in all_obj]    
+    result = [{"id":pj.id,
+               "name": pj.name, 
+               "module":pj.module, 
+               "comment": pj.comment, 
+               "c_time": pj.create_time.strftime("%Y-%m-%d %H:%M:%S"),
+               "u_time": pj.update_time.strftime("%Y-%m-%d %H:%M:%S")
+               } for pj in all_obj]    
     #return make_response(render_template("project/project.html", projects = get_result(result, message = "search success.")))
     return jsonify(get_result(result, message = "search success."))
     
@@ -106,11 +112,3 @@ def delete():
         message = "do not have the project with proj_id({})".format(param.get("proj_id"))
     return jsonify(get_result(result, status = status,message = message))
 
-@project.after_request
-def after_request(response):    
-    response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
-#     response.headers['Access-Control-Allow-Credentials'] = 'true'
-#     response.headers['Access-Control-Allow-Methods'] = '*'    
-#     response.headers['Access-Control-Expose-Headers'] = '*'  
-    return response
