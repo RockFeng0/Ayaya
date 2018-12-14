@@ -152,7 +152,7 @@ def manage_project():
     
     elif request.method == "POST":   
         # POST /     
-        try:
+        try:            
             status = True
             project_data = _query.filter_by(name = j_param.get("name"), module = j_param.get("module")).first()
              
