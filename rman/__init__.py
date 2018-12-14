@@ -35,10 +35,9 @@ def create_app(env=None):
                                 View(u'主页','index'),
                                 View(u'关于','about'),
                                 Subgroup(u'项目管理',
-                                         View(u'项目列表','project.search'),
+                                         View(u'项目列表','project.manage_project'),
                                          Separator(),
-                                         View(u'调试-项目更新', 'project.update'),
-                                         View(u'调试-删除项目', 'project.delete'),
+                                         View(u'调试-项目更新', 'project.manage_project'),
                                          ),
                                 )
                         )
