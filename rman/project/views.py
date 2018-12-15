@@ -116,7 +116,7 @@ def get_result(result, status=True, message="success" ):
 #     return jsonify(get_result(result, status = status,message = message))
 
 
-@project.route("/", methods = ["GET","POST","DELETE","PUT"])
+@project.route("/manager", methods = ["GET","POST","DELETE","PUT"])
 def manage_project():    
     param = dict(request.args.items())
     j_param = request.json        
