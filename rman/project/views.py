@@ -119,7 +119,8 @@ def get_result(result, status=True, message="success" ):
 @project.route("/manager", methods = ["GET","POST","DELETE","PUT"])
 def manage_project():    
     param = dict(request.args.items())
-    j_param = request.json        
+    j_param = request.json if request.data else {}
+    print('2!@#@')
     _query = get_query()
     now = datetime.datetime.now()
     
