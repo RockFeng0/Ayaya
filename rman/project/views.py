@@ -120,7 +120,6 @@ def get_result(result, status=True, message="success" ):
 def manage_project():    
     param = dict(request.args.items())
     j_param = request.json if request.data else {}
-    print('2!@#@')
     _query = get_query()
     now = datetime.datetime.now()
     
