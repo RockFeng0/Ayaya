@@ -22,11 +22,10 @@ import logging
 
 from . import app
 from flask import render_template
-
+from flask_wtf.csrf import generate_csrf
 
 # 获取日志操作句柄
 logger = logging.getLogger(__name__)
-
 
     
 @app.route('/')
@@ -39,6 +38,8 @@ def about():
 
 @app.after_request
 def after_request(response):
+    # CSRF问题
+    response.set_cookie("token", generate_csrf())
     # 跨域问题
     response.headers['Access-Control-Allow-Origin'] = '*'
     response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
