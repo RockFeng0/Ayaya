@@ -18,5 +18,16 @@ Provide a function for the automation test
 
 '''
 
+from . import auth
+from .models import User
+from rman import login_manager
 
-from flask import request, session, g
+_query = User.query
+
+@login_manager.user_loader
+def load_user(userid):
+    return _query.filter_by(id = userid).first()
+
+@auth.route("/login", methods = ["POST"])
+def login():
+    pass

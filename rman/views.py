@@ -40,10 +40,4 @@ def about():
 def after_request(response):
     # CSRF问题
     response.set_cookie("token", generate_csrf())
-    # 跨域问题
-    response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
-#     response.headers['Access-Control-Allow-Credentials'] = 'true'
-    response.headers['Access-Control-Allow-Methods'] = '*'    
-#     response.headers['Access-Control-Expose-Headers'] = '*'  
     return response

@@ -42,3 +42,5 @@ class Project(db.Model):
     
     def __repr__(self):
         return '<Project %r-%r>' % (self.name,self.id)
+    
+

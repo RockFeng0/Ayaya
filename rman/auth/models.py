@@ -20,11 +20,12 @@ Provide a function for the automation test
 
 from rman import db
 from sqlalchemy import Column, Integer, String, SmallInteger, DateTime
+from flask_login import UserMixin
 
 ROLE_USER = 0
 ROLE_ADMIN = 1
  
-class User(db.Model):
+class User(db.Model, UserMixin):
     ''' 用户   '''
     __tablename__ = "user"
     
@@ -45,18 +46,6 @@ class User(db.Model):
         self.role   = role
         self.about_me = about_me
         self.last_seen = last_seen
-
-    def is_authenticated(self):
-        return True
-
-    def is_active(self):
-        return True
-
-    def is_anonymous(self):
-        return False
-
-    def get_id(self):
-        return self.id
     
     def __repr__(self):
         return '<User %r>' % (self.name)

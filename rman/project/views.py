@@ -17,15 +17,24 @@ v1.0    Original version to use
 Provide a function for the automation test
 
 '''
+import datetime
 
 from . import project
 from .models import Project, db
-from flask_wtf import Form 
-from wtforms import TextField, SubmitField, validators
-from flask import make_response, request, redirect, url_for, render_template, jsonify
-import datetime
 
+from flask import request, jsonify
+from rman import login_manager
 
+def get_query():
+    return Project.query
+    
+def get_result(result, status=True, message="success" ):
+    return {"status":status, "message":message,"result":result}
+
+# from flask_wtf import Form 
+# from wtforms import TextField, SubmitField, validators
+# from flask import make_response,  redirect, url_for, render_template
+#
 # class ProjectForm(Form):
 #     name = TextField('项目名称:', [validators.length(1, 32, "项目名称最多32字符")])
 #     module = TextField('待测模块:', [validators.length(1, 32, "待测模块最多32字符")])
@@ -37,12 +46,6 @@ import datetime
 #     form = ProjectForm(request.form)    
 #     return make_response(render_template("project/project.html", form = form))
 #########
-    
-def get_query():
-    return Project.query
-    
-def get_result(result, status=True, message="success" ):
-    return {"status":status, "message":message,"result":result}
 
 # @project.route('/search')
 # def search():
@@ -117,6 +120,7 @@ def get_result(result, status=True, message="success" ):
 
 
 @project.route("/manager", methods = ["GET","POST","DELETE","PUT"])
+@login_manager.login_required
 def manage_project():    
     param = dict(request.args.items())
     j_param = request.json if request.data else {}
