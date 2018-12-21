@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 from flask_cors import CORS
 from flask_login import LoginManager
+from flask_bcrypt import Bcrypt
 # from flask_bootstrap import Bootstrap
 # from flask_nav import Nav
 # from flask_nav.elements import Navbar, View, Subgroup, Separator
@@ -18,6 +19,7 @@ logger.setLevel(logging.DEBUG)
 db = SQLAlchemy()
 cors = CORS()
 login_manager = LoginManager()
+bcrypt = Bcrypt()
 
 # bootstrap = Bootstrap()
 # nav=Nav()
@@ -35,6 +37,7 @@ def create_app(env=None):
     db.init_app(app)    
     cors.init_app(app)
     login_manager.init_app(app)
+    bcrypt.init_app(app)
         
 #     bootstrap.init_app(app)
 #     nav.register_element('top',Navbar(u'rtsf自动化用例管理',

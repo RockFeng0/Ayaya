@@ -21,7 +21,6 @@ import datetime
 
 from . import project
 from .models import Project, db
-
 from flask import request, jsonify
 from rman import login_manager
 
