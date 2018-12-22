@@ -32,7 +32,7 @@ class Config(object):
     SECRET_KEY = 'dsfsdfwe'
         
     # 蓝图开关
-    ALL_BLUE_PRINT = {"auth":False, "httptest":False, "project":True}
+    ALL_BLUE_PRINT = {"auth":True, "httptest":False, "project":True}
     
     @staticmethod
     def init_app(app):

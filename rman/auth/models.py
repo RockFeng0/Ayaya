@@ -31,10 +31,10 @@ class User(db.Model, UserMixin):
     __tablename__ = "user"
     
     id          = Column(Integer, primary_key = True)
-    name        = Column(String(24), unique = True)
-    email       = Column(String(24), unique = True)
-    password    = Column(String())
-    identity_id = Column(String(16))
+    name        = Column(String(24), unique = True, nullable = False)
+    email       = Column(String(24), unique = True, nullable = False)
+    identity_id = Column(String(18), unique = True, nullable = False)
+    password    = Column(String(), nullable = False)
     role        = Column(SmallInteger, default = ROLE_USER)
     about_me    = Column(String(140))
     last_seen   = Column(DateTime)
@@ -48,9 +48,9 @@ class User(db.Model, UserMixin):
         self.about_me = about_me
         self.last_seen = last_seen
     
-    def set_password(self, passwd):
-        self.password = bcrypt.generate_password_hash(passwd)
-
+    def set_password(self):
+        self.password = bcrypt.generate_password_hash(self.password)
+ 
     def check_password(self, passwd):
         return bcrypt.check_password_hash(self.password, passwd)
     

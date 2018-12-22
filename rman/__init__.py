@@ -23,6 +23,7 @@ bcrypt = Bcrypt()
 
 # bootstrap = Bootstrap()
 # nav=Nav()
+
 def create_app(env=None):
     app = Flask(__name__)
     configuration = config[env] if env else config["testing"]
@@ -53,12 +54,11 @@ def create_app(env=None):
 #     nav.init_app(app)
     
     # 依据config， 注册蓝图
-    blue_prints = app.config.get("ALL_BLUE_PRINT")
-    
 #     from rman.project import project
 #     app.register_blueprint(project, url_prefix = '/project')
     
-    for module_name,module_switch in blue_prints.items():
+    blue_prints = app.config.get("ALL_BLUE_PRINT")
+    for module_name,module_switch in blue_prints.items():        
         if module_switch:
             try:
                 obj = importlib.import_module("rman.{0}".format(module_name))
@@ -72,9 +72,9 @@ def create_app(env=None):
     return app
 
 
-
 env = "testing"
 app = create_app(env)
+
 
 # 加载顶层视图函数，缺少下面的语句会导致views中的视图函数注册失败
 from .views import *

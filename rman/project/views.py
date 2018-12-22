@@ -22,13 +22,12 @@ import datetime
 from . import project
 from .models import Project, db
 from flask import request, jsonify
-from rman import login_manager
+
+def get_result(result, status=True, message="success" ):
+    return {"status":status, "message":message,"result":result}
 
 def get_query():
     return Project.query
-    
-def get_result(result, status=True, message="success" ):
-    return {"status":status, "message":message,"result":result}
 
 # from flask_wtf import Form 
 # from wtforms import TextField, SubmitField, validators
@@ -119,11 +118,10 @@ def get_result(result, status=True, message="success" ):
 
 
 @project.route("/manager", methods = ["GET","POST","DELETE","PUT"])
-@login_manager.login_required
-def manage_project():    
+def manage_project():
     param = dict(request.args.items())
     j_param = request.json if request.data else {}
-    _query = get_query()
+    _query = get_query()    
     now = datetime.datetime.now()
     
     has_proj_id = True if param.get("proj_id") else False
