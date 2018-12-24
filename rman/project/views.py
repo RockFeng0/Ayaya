@@ -128,7 +128,7 @@ def manage_project():
     pj = _query.filter_by(id = param.get("proj_id")).first()
     if request.method == "GET":        
         
-        # GET /
+        # GET /manager
         if not has_proj_id:            
             all_obj = _query.order_by(Project.update_time.desc()).all()    
             result = [{"id":pj.id,
@@ -140,7 +140,7 @@ def manage_project():
                        } for pj in all_obj]
             return jsonify(get_result(result, message = "get all project success."))
         
-        # GET /?proj_id=32342
+        # GET /manager?proj_id=32342
         if pj:            
             status = True
             result = {"id":pj.id,"name": pj.name, "module":pj.module, "comment": pj.comment}
@@ -152,7 +152,7 @@ def manage_project():
         return jsonify(get_result(result, status = status,message = message))
     
     elif request.method == "POST":   
-        # POST /     
+        # POST /manager    
         try:            
             status = True
             project_data = _query.filter_by(name = j_param.get("name"), module = j_param.get("module")).first()
@@ -173,7 +173,7 @@ def manage_project():
         return jsonify(get_result("", status = status, message = message))
     
     elif request.method == "DELETE":
-        # DELETE /?proj_id=32342
+        # DELETE /manager?proj_id=32342
         if pj:
             db.session.delete(pj)
             db.session.commit()
@@ -189,6 +189,7 @@ def manage_project():
         if pj:
             for i in ["name", "module", "comment"]:
                 setattr(pj, i, j_param.get(i,""))
+            pj.update_time = now
             status = True
             message = "update project success."
             db.session.flush()

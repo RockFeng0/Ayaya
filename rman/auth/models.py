@@ -31,7 +31,7 @@ class User(db.Model, UserMixin):
     __tablename__ = "user"
     
     id          = Column(Integer, primary_key = True)
-    name        = Column(String(24), unique = True, nullable = False)
+    username        = Column(String(24), unique = True, nullable = False)
     email       = Column(String(24), unique = True, nullable = False)
     identity_id = Column(String(18), unique = True, nullable = False)
     password    = Column(String(), nullable = False)
@@ -40,7 +40,7 @@ class User(db.Model, UserMixin):
     last_seen   = Column(DateTime)
     
     def __init__(self, name, email, passwd, identity_id, role, about_me, last_seen):
-        self.name   = name
+        self.username   = name
         self.email  = email
         self.password = passwd
         self.identity_id = identity_id
@@ -48,11 +48,11 @@ class User(db.Model, UserMixin):
         self.about_me = about_me
         self.last_seen = last_seen
     
-    def set_password(self):
-        self.password = bcrypt.generate_password_hash(self.password)
+    def set_password(self, password):
+        self.password = bcrypt.generate_password_hash(password)
  
     def check_password(self, passwd):
         return bcrypt.check_password_hash(self.password, passwd)
     
     def __repr__(self):
-        return '<User %r>' % (self.name)
+        return '<User %r>' % (self.username)
