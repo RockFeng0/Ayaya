@@ -12,6 +12,9 @@ from flask_bcrypt import Bcrypt
 from rman.config import config
 from rman.log import console,log_handler,err_handler
 
+from werkzeug.contrib.cache import SimpleCache
+simple_cache = SimpleCache()
+
 logger = logging.getLogger(__name__)
 logger.addHandler(console)
 logger.setLevel(logging.DEBUG)
@@ -36,7 +39,7 @@ def create_app(env=None):
     app.config.from_object(configuration)
     configuration.init_app(app)
     db.init_app(app)    
-    cors.init_app(app)
+    cors.init_app(app, supports_credentials=True)
     login_manager.init_app(app)
     bcrypt.init_app(app)
         

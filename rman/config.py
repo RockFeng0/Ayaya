@@ -21,15 +21,14 @@ Provide a function for the automation test
 class Config(object):
     # 防止返回的json中汉字被转码
     JSON_AS_ASCII = False
+    SECRET_KEY = 'lskdjflsj'
+    TOKEN_LIFETIME = 3600 
     
     # flask-sqlalchemy 数据库 - 请求执行完逻辑之后自动提交，而不用我们每次都手动调用session.commit(); 我还是习惯，自己 commit
     SQLALCHEMY_COMMIT_ON_TEARDOWN = False
     
     # flask-sqlalchemy 数据库 - 需要设定参数True 或者 Flase,是说SQLALCHEMY_TRACK_MODIFICATIONS不能默认什么都没有
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    
-    # flask-wtf flask表单密钥   config 
-    SECRET_KEY = 'dsfsdfwe'
         
     # 蓝图开关
     ALL_BLUE_PRINT = {"auth":True, "httptest":False, "project":True}

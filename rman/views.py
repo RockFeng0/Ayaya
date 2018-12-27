@@ -28,16 +28,17 @@ from flask_wtf.csrf import generate_csrf
 logger = logging.getLogger(__name__)
 
     
-@app.route('/')
-def index():
-    return render_template("index.html")
+# @app.route('/')
+# def index():
+#     return render_template("index.html")
+# 
+# @app.route('/about')
+# def about():
+#     return render_template("about.html")
 
-@app.route('/about')
-def about():
-    return render_template("about.html")
 
 @app.after_request
 def after_request(response):
     # CSRF问题
-    response.set_cookie("token", generate_csrf())
+#     response.set_cookie("token", generate_csrf())
     return response

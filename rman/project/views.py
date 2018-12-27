@@ -22,6 +22,7 @@ import datetime
 from . import project
 from .models import Project, db
 from flask import request, jsonify
+from flask_login import login_required
 
 def get_result(result, status=True, message="success" ):
     return {"status":status, "message":message,"result":result}
@@ -118,6 +119,7 @@ def get_query():
 
 
 @project.route("/manager", methods = ["GET","POST","DELETE","PUT"])
+@login_required
 def manage_project():
     param = dict(request.args.items())
     j_param = request.json if request.data else {}
