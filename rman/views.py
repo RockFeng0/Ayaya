@@ -21,20 +21,10 @@ Provide a function for the automation test
 import logging
 
 from . import app
-from flask import render_template
-from flask_wtf.csrf import generate_csrf
+# from flask_wtf.csrf import generate_csrf
 
 # 获取日志操作句柄
 logger = logging.getLogger(__name__)
-
-    
-# @app.route('/')
-# def index():
-#     return render_template("index.html")
-# 
-# @app.route('/about')
-# def about():
-#     return render_template("about.html")
 
 
 @app.after_request

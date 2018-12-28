@@ -42,8 +42,8 @@ class User(db.Model, UserMixin):
     
     def __init__(self, name, email, passwd, identity_id, role, about_me, last_seen):
         self.username   = name
-        self.email  = email
-        self.password = passwd
+        self.email  = email        
+        self.set_password(passwd)
         self.identity_id = identity_id
         self.role   = role
         self.about_me = about_me

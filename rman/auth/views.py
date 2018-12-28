@@ -17,14 +17,14 @@ v1.0    Original version to use
 Provide a function for the automation test
 
 '''
-from . import auth
-from .models import User, db
 from rman import login_manager,simple_cache
+from rman.auth import auth
+from rman.auth.models import User, db
 
 import datetime
 from itsdangerous import URLSafeSerializer, BadData
-from flask import request,jsonify, session, current_app
-from flask_login import login_user, logout_user, current_user, login_required
+from flask import request,jsonify, current_app
+from flask_login import login_user, logout_user, login_required
 
 def get_result(result, status=True, message="success" ):
     return {"status":status, "message":message,"result":result}
@@ -52,8 +52,7 @@ def load_user(token):
         if not token_cache:  # 此处找不到有2个原因：1.cache中因为超时失效（属于正常情况）；2.cache机制出错（属于异常情况）。
             print("the token is not found in cache.")
             return None
-        print(str(password))
-        print(str(user.password))
+        
         if str(password) != str(user.password):            
             print("the password in token is not matched!")            
             simple_cache.delete(token)
@@ -72,14 +71,13 @@ def login():
     j_param = request.json if request.data else {}
     _query = get_query()
     
-    try:  
-        
+    try:    
         if j_param.get("username"):
             user = _query.filter_by(username = j_param.get("username")).first()
         elif j_param.get("email"):
-            user = _query.filter_by(username = j_param.get("email")).first()
+            user = _query.filter_by(email = j_param.get("email")).first()
         elif j_param.get("identity_id"):
-            user = _query.filter_by(username = j_param.get("identity_id")).first()
+            user = _query.filter_by(identity_id = j_param.get("identity_id")).first()
         else:
             return jsonify(get_result("", status = False, message = 'Need username or email or identity_id'))
         
@@ -92,18 +90,16 @@ def login():
         
         if user.check_password(password):
             login_user(user)
-            # 完成登录后将token存到缓存中并设置过期时间，后面校验时如果缓存中不存在，则报错
+            
             life_time = current_app.config.get("TOKEN_LIFETIME")
-            token = user.get_id(life_time)   # 这里调用get_id()产生token，Flask-Login的token也是调用get_id()产生的，从而保证的二者的一致。
-            print("-------- login, token=", token)
-            simple_cache.set(token, 1, life_time)  # 设置cache的失效时间，在login()就可以通过判断cache中是否存在token来知道是否超时了。            
+            token = user.get_id(life_time)            
+            simple_cache.set(token, 1, life_time)
+                        
             return jsonify(get_result("", status = True, message = 'Login success.'))
         else:
             return jsonify(get_result("", status = False, message = 'Password not correct.'))
             
     except Exception as e:
-        import traceback
-        traceback.print_exc()
         message = str(e) 
         return jsonify(get_result("", status = False, message = 'Error: {}'.format(message)))
     
@@ -126,22 +122,21 @@ def register():
         if username:
             user = _query.filter_by(username = username).first()
         elif email:
-            user = _query.filter_by(username = email).first()
+            user = _query.filter_by(email = email).first()
         elif identity_id:
-            user = _query.filter_by(username = identity_id).first()
+            user = _query.filter_by(identity_id = identity_id).first()
             
         if user:
             return jsonify(get_result("", status = False, message = "User already exists, can't register."))        
         
         user = User(username, email, password, identity_id, role, about_me, now)
-        user.set_password(user.password)
-        
-        status = True
+                
         db.session.add(user)        
-        message = "Register user success."
         db.session.flush()
         db.session.commit()
-        
+        status = True        
+        message = "Register user success."
+                
     except Exception as e:
         status = False
         message = 'Error: {}'.format(str(e))   
@@ -186,11 +181,6 @@ def update_user():
         message = "do not have the project with user_id({})".format(param.get("user_id"))
         
     return jsonify(get_result("", status = status,message = message))
-
-@auth.route("/test")
-@login_required
-def test():
-    return "@#$#@@#$@#$#@$"
 
 @auth.route("/logout", methods = ["GET"])
 @login_required

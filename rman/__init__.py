@@ -24,9 +24,6 @@ cors = CORS()
 login_manager = LoginManager()
 bcrypt = Bcrypt()
 
-# bootstrap = Bootstrap()
-# nav=Nav()
-
 def create_app(env=None):
     app = Flask(__name__)
     configuration = config[env] if env else config["testing"]
@@ -43,23 +40,6 @@ def create_app(env=None):
     login_manager.init_app(app)
     bcrypt.init_app(app)
         
-#     bootstrap.init_app(app)
-#     nav.register_element('top',Navbar(u'rtsf自动化用例管理',
-#                                 View(u'主页','index'),
-#                                 View(u'关于','about'),
-#                                 Subgroup(u'项目管理',
-#                                          View(u'项目列表','project.manage_project'),
-#                                          Separator(),
-#                                          View(u'调试-项目更新', 'project.manage_project'),
-#                                          ),
-#                                 )
-#                         )
-#     nav.init_app(app)
-    
-    # 依据config， 注册蓝图
-#     from rman.project import project
-#     app.register_blueprint(project, url_prefix = '/project')
-    
     blue_prints = app.config.get("ALL_BLUE_PRINT")
     for module_name,module_switch in blue_prints.items():        
         if module_switch:
