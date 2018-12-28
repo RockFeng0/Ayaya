@@ -94,8 +94,9 @@ def login():
             life_time = current_app.config.get("TOKEN_LIFETIME")
             token = user.get_id(life_time)            
             simple_cache.set(token, 1, life_time)
-                        
-            return jsonify(get_result("", status = True, message = 'Login success.'))
+            result = {"token":token}
+             
+            return jsonify(get_result(result, status = True, message = 'Login success.'))
         else:
             return jsonify(get_result("", status = False, message = 'Password not correct.'))
             
