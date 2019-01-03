@@ -54,7 +54,7 @@ class User(db.Model, UserMixin):
         s = URLSafeSerializer(key)
         if not life_time:
             life_time = current_app.config.get("TOKEN_LIFETIME")        
-        token = s.dumps((self.id, self.username, str(self.password), life_time))
+        token = s.dumps((self.id, self.username, str(self.password), life_time))        
         return token
 
     def set_password(self, password):

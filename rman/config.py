@@ -29,7 +29,10 @@ class Config(object):
     
     # flask-sqlalchemy 数据库 - 需要设定参数True 或者 Flase,是说SQLALCHEMY_TRACK_MODIFICATIONS不能默认什么都没有
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-        
+    
+    # flask-login
+    REMEMBER_COOKIE_NAME = "token"
+    
     # 蓝图开关
     ALL_BLUE_PRINT = {"auth":True, "httptest":False, "project":True}
     

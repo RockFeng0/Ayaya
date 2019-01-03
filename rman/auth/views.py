@@ -32,6 +32,7 @@ def get_result(result, status=True, message="success" ):
 def get_query():
     return User.query
 
+
 @login_manager.user_loader
 def load_user(token):
     _query = get_query()
@@ -41,7 +42,7 @@ def load_user(token):
         s = URLSafeSerializer(key)
         userid, username, password, life_time = s.loads(token)
     except BadData:
-        print("token had been modified!")
+        # token had been modified!
         return None
   
     # 校验密码
@@ -50,17 +51,17 @@ def load_user(token):
         # 能loads出id，name等信息，说明已经成功登录过，那么cache中就应该有token的缓存
         token_cache = simple_cache.get(token)
         if not token_cache:  # 此处找不到有2个原因：1.cache中因为超时失效（属于正常情况）；2.cache机制出错（属于异常情况）。
-            print("the token is not found in cache.")
+            # the token is not found in cache.
             return None
         
         if str(password) != str(user.password):            
-            print("the password in token is not matched!")            
+            # the password in token is not matched!            
             simple_cache.delete(token)
             return None
         else:
             simple_cache.set(token, 1, timeout=life_time)
     else:
-        print('the user is not found, the token is invalid!')
+        # the user is not found, the token is invalid!
         return None
     return user
     
@@ -89,14 +90,14 @@ def login():
             return jsonify(get_result("", status = False, message = 'Need password.'))
         
         if user.check_password(password):
-            login_user(user)
+            remember_me = True if j_param.get("remember") else False            
+            login_user(user, remember=remember_me)
             
             life_time = current_app.config.get("TOKEN_LIFETIME")
             token = user.get_id(life_time)            
             simple_cache.set(token, 1, life_time)
-            result = {"token":token}
-             
-            return jsonify(get_result(result, status = True, message = 'Login success.'))
+                         
+            return jsonify(get_result("", status = True, message = 'Login success.'))
         else:
             return jsonify(get_result("", status = False, message = 'Password not correct.'))
             
@@ -194,3 +195,8 @@ def logout():
         status = False
         message = 'Error: {}'.format(str(e))   
     return jsonify(get_result("", status = status, message = message))
+
+@auth.route('/test', methods = ['GET'])
+@login_required
+def test():
+    return "sdfsdf"

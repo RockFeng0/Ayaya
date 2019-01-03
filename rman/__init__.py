@@ -5,9 +5,6 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_login import LoginManager
 from flask_bcrypt import Bcrypt
-# from flask_bootstrap import Bootstrap
-# from flask_nav import Nav
-# from flask_nav.elements import Navbar, View, Subgroup, Separator
 
 from rman.config import config
 from rman.log import console,log_handler,err_handler

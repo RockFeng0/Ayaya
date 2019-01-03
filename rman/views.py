@@ -20,15 +20,17 @@ Provide a function for the automation test
 
 import logging
 
-from . import app
-# from flask_wtf.csrf import generate_csrf
+from flask import redirect
+from rman import app
+
 
 # 获取日志操作句柄
 logger = logging.getLogger(__name__)
 
+@app.route("/")
+def index():
+    return redirect('http://127.0.0.1:8080/login')
 
 @app.after_request
 def after_request(response):
-    # CSRF问题
-#     response.set_cookie("token", generate_csrf())
     return response
