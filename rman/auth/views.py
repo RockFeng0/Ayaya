@@ -97,7 +97,7 @@ def login():
             token = user.get_id(life_time)            
             simple_cache.set(token, 1, life_time)
                          
-            return jsonify(get_result("", status = True, message = 'Login success.'))
+            return jsonify(get_result({"token":token, "username":user.username}, status = True, message = 'Login success.'))
         else:
             return jsonify(get_result("", status = False, message = 'Password not correct.'))
             

@@ -102,6 +102,7 @@ def manage_project():
         # PUT /?proj_id=32342
         if pj:
             for i in ["name", "module", "comment"]:
+                print(j_param.get(i,""))
                 setattr(pj, i, j_param.get(i,""))
             pj.update_time = now
             status = True
