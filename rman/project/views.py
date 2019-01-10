@@ -42,17 +42,21 @@ def manage_project():
     pj = _query.filter_by(id = param.get("proj_id")).first()
     if request.method == "GET":        
         
-        # GET /manager
-        if not has_proj_id:            
-            all_obj = _query.order_by(Project.update_time.desc()).all()    
-            result = [{"id":pj.id,
-                       "name": pj.name, 
-                       "module":pj.module, 
-                       "comment": pj.comment, 
-                       "c_time": pj.create_time.strftime("%Y-%m-%d %H:%M:%S"),
-                       "u_time": pj.update_time.strftime("%Y-%m-%d %H:%M:%S")
-                       } for pj in all_obj]
-            return jsonify(get_result(result, message = "get all project success."))
+        # GET /manager?page=1&size=10
+        if not has_proj_id:
+            page = int(param.get("page", 1))
+            size = int(param.get("size", 10))
+            total = _query.order_by(Project.update_time.desc()).count()
+            pagination = _query.order_by(Project.update_time.desc()).paginate(page = page, per_page= size, error_out=False)
+            result = {"total": total, "projects":[]}
+            result["projects"] = [{"id":pj.id,
+                               "name": pj.name, 
+                               "module":pj.module, 
+                               "comment": pj.comment, 
+                               "c_time": pj.create_time.strftime("%Y-%m-%d %H:%M:%S"),
+                               "u_time": pj.update_time.strftime("%Y-%m-%d %H:%M:%S")
+                               } for pj in pagination.items]
+            return jsonify(get_result(result, message = "get all projects success in page: {0} size: {1}.".format(page, size)))
         
         # GET /manager?proj_id=32342
         if pj:            
@@ -115,5 +119,23 @@ def manage_project():
         return jsonify(get_result("", status = status,message = message))
     
 
-
-
+@project.route("/test", methods = ["GET"])
+@login_required
+def test():
+    param = dict(request.args.items())    
+    _query = get_query()
+     
+    if request.method == "GET":
+        page = int(param.get("page", 0))
+        size = int(param.get("size", 10))
+        pagination = _query.order_by(Project.update_time.desc()).paginate(page = page, per_page= size, error_out=False)
+        result = [{"id":pj.id,
+                           "name": pj.name, 
+                           "module":pj.module, 
+                           "comment": pj.comment, 
+                           "c_time": pj.create_time.strftime("%Y-%m-%d %H:%M:%S"),
+                           "u_time": pj.update_time.strftime("%Y-%m-%d %H:%M:%S")
+                           } for pj in pagination.items]
+        return jsonify(get_result(result, message = "get all projects success in page: {0} size: {1}.".format(page, size)))
+    
+        
