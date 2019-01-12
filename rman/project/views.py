@@ -71,7 +71,11 @@ def manage_project():
     
     elif request.method == "POST":   
         # POST /manager    
-        try:            
+        try:
+            for param in ("name", "module"):
+                if not j_param.get(param):
+                    return jsonify(get_result("", status = False, message = 'project {0} should not be null.'.format(param)))
+                    
             status = True
             project_data = _query.filter_by(name = j_param.get("name"), module = j_param.get("module")).first()
              
@@ -105,8 +109,11 @@ def manage_project():
     elif request.method == "PUT":
         # PUT /?proj_id=32342
         if pj:
+            for param in ("name", "module"):
+                if not j_param.get(param):
+                    return jsonify(get_result("", status = False, message = 'project {0} should not be null.'.format(param)))
+                
             for i in ["name", "module", "comment"]:
-                print(j_param.get(i,""))
                 setattr(pj, i, j_param.get(i,""))
             pj.update_time = now
             status = True
