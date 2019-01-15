@@ -31,8 +31,8 @@ class Case(db.Model):
     name            = Column(String(32), nullable = False, comment = '测试用例名称')
     responsible     = Column(String(32), comment = '测试责任人或者用例编写人员')
     tester          = Column(String(32), comment = '测试执行人或者运行该用例的人员')
-    func            = Column(String(64), nullable = False, comment = 'api或者suite的函数名称(必填)， case无要求')
     case_type       = Column(SmallInteger, default = 0, comment = '0-api, 1-case, 2-suite')
+    func            = Column(String(64), nullable = False, comment = 'api或者suite的函数名称(必填)， case无要求')    
        
     create_time     = Column(DateTime, nullable = False)
     update_time     = Column(DateTime, nullable = False)
@@ -42,9 +42,10 @@ class Case(db.Model):
         self.desc        = desc       
         self.name        = name       
         self.responsible = responsible
-        self.tester      = tester     
-        self.func        = func       
-        self.type        = case_type
+        self.tester      = tester
+        self.case_type   = case_type     
+        self.func        = func      
+        
         self.create_time = create_time
         self.update_time = update_time    
     

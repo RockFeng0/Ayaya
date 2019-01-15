@@ -43,4 +43,21 @@ class Project(db.Model):
     def __repr__(self):
         return '<Project %r-%r>' % (self.name,self.id)
     
+class CaseProjectRelation(db.Model):
+    ''' 测试项目  '''
+    __tablename__ = 'case_project_relation'
+        
+    id              = Column(Integer, primary_key=True)
+    project_id      = Column(Integer, nullable = False, comment = '项目id')
+    case_id         = Column(Integer, nullable = False, comment = '用例id')    
+    create_time     = Column(DateTime, nullable = False)
+    update_time     = Column(DateTime, nullable = False)
 
+    def __init__(self, project_id, case_id, create_time,update_time):  
+        self.project_id  = project_id 
+        self.case_id     = case_id 
+        self.create_time = create_time
+        self.update_time = update_time    
+        
+    def __repr__(self):
+        return '<CaseProjectRelation %r-%r>' % (self.project_id,self.case_id)
