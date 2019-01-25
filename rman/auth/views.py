@@ -141,7 +141,7 @@ def register():
                 
     except Exception as e:
         status = False
-        message = 'Error: {}'.format(str(e))   
+        message = 'Error:{}'.format(str(e))   
     return jsonify(get_result("", status = status, message = message))
 
 @auth.route("/update_user", methods = ["PUT"])
