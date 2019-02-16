@@ -25,26 +25,26 @@ class Case(db.Model):
     ''' 测试用例   -> 所有的测试用例    '''
     __tablename__ = 'case'
         
-    id              = Column(Integer, primary_key=True)
-    project_id      = Column(Integer, nullable = False, comment = '关联的项目ID')
-    desc            = Column(String(64), comment = '用例的简单描述')
+    id              = Column(Integer, primary_key=True)    
     name            = Column(String(32), nullable = False, comment = '测试用例名称')
+    desc            = Column(String(64), comment = '用例的简单描述')    
     responsible     = Column(String(32), comment = '测试责任人或者用例编写人员')
     tester          = Column(String(32), comment = '测试执行人或者运行该用例的人员')
     case_type       = Column(SmallInteger, default = 0, comment = '0-api, 1-case, 2-suite')
     func            = Column(String(64), nullable = False, comment = 'api或者suite的函数名称(必填)， case无要求')    
-       
+    project_id      = Column(Integer, nullable = False, comment = '关联的项目ID')
+    
     create_time     = Column(DateTime, nullable = False)
     update_time     = Column(DateTime, nullable = False)
 
-    def __init__(self, project_id,desc,name,responsible,tester,func, case_type,create_time,update_time):  
-        self.project_id  = project_id 
+    def __init__(self, name,desc,responsible,tester,func, case_type,project_id,create_time,update_time):
+        self.name        = name        
         self.desc        = desc       
-        self.name        = name       
         self.responsible = responsible
         self.tester      = tester
         self.case_type   = case_type     
         self.func        = func      
+        self.project_id  = project_id 
         
         self.create_time = create_time
         self.update_time = update_time    
@@ -57,8 +57,7 @@ class CaseItemRequest(db.Model):
 
     __tablename__ = 'case_item_request'
         
-    id              = Column(Integer, primary_key=True)
-    case_id         = Column(Integer, nullable = False, comment = '隶属于case表-关联case表')
+    id              = Column(Integer, primary_key=True)    
     glob_var        = Column(String(512), comment = '全局变量（dict）')
     glob_regx       = Column(String(512), comment = '全局正则表达式（dict）')
     pre_command     = Column(String(512), comment = '测试用例前置条件(list)')
@@ -68,12 +67,12 @@ class CaseItemRequest(db.Model):
     data            = Column(String(1024), comment = '请求体(dict or str)')
     post_command    = Column(String(512), comment = '测试用例后置条件(list)')
     verify          = Column(String(512), comment = '验证条件(list)')
-        
+    case_id         = Column(Integer, nullable = False, comment = '隶属于case表-关联case表')
+    
     create_time     = Column(DateTime, nullable = False)
     update_time     = Column(DateTime, nullable = False)
 
-    def __init__(self, case_id, glob_var, glob_regx,pre_command,url,method,hearders,data,post_command,verify,create_time,update_time):  
-        self.case_id        = case_id 
+    def __init__(self, glob_var, glob_regx,pre_command,url,method,hearders,data,post_command,verify,case_id,create_time,update_time):
         self.glob_var       = glob_var       
         self.glob_regx      = glob_regx
         self.pre_command    = pre_command
@@ -83,6 +82,7 @@ class CaseItemRequest(db.Model):
         self.data           = data
         self.post_command   = post_command
         self.verify         = verify
+        self.case_id        = case_id 
         self.create_time    = create_time
         self.update_time    = update_time
           
