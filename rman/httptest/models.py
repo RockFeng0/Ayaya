@@ -32,20 +32,18 @@ class Case(db.Model):
     tester          = Column(String(32), comment = '测试执行人或者运行该用例的人员')
     case_type       = Column(SmallInteger, default = 0, comment = '0-api, 1-case, 2-suite')
     func            = Column(String(64), nullable = False, comment = 'api或者suite的函数名称(必填)， case无要求')    
-    project_id      = Column(Integer, nullable = False, comment = '关联的项目ID')
-    
+        
     create_time     = Column(DateTime, nullable = False)
     update_time     = Column(DateTime, nullable = False)
 
-    def __init__(self, name,desc,responsible,tester,func, case_type,project_id,create_time,update_time):
+    def __init__(self, name,desc,responsible,tester,func, case_type,create_time,update_time):
         self.name        = name        
         self.desc        = desc       
         self.responsible = responsible
         self.tester      = tester
         self.case_type   = case_type     
         self.func        = func      
-        self.project_id  = project_id 
-        
+                
         self.create_time = create_time
         self.update_time = update_time    
     
@@ -90,8 +88,6 @@ class CaseItemRequest(db.Model):
     def __repr__(self):
         return '<CaseItemRequest %r-%r>' % (self.url,self.id)
         
-
-
 
 # # 执行
 # class Run(db.Model):

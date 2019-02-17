@@ -20,57 +20,54 @@ Provide a function for the automation test
 import datetime
 from flask import request, jsonify
 from flask_login import login_required
+from flask.views import MethodView
 
 from rman.project import project
-from rman.project.models import Project, db
+from rman.project.models import Project, CaseProjectRelation, db
 
 def get_result(result, status=True, message="success" ):
     return {"status":status, "message":message,"result":result}
 
 def get_query():
-    return Project.query
+    return db.session.query(Project)
 
-@project.route("/manager", methods = ["GET","POST","DELETE","PUT"])
-@login_required
-def manage_project():
-    param = dict(request.args.items())
-    j_param = request.json if request.data else {}
-    _query = get_query()    
-    now = datetime.datetime.now()
-    
-    has_proj_id = True if param.get("proj_id") else False
-    pj = _query.filter_by(id = param.get("proj_id")).first()
-    if request.method == "GET":        
+def get_relation_query():
+    return db.session.query(CaseProjectRelation)
+
         
+class ProjectView(MethodView):
+    
+    def get(self):
         # GET /manager?page=1&size=10
-        if not has_proj_id:
-            page = int(param.get("page", 1))
-            size = int(param.get("size", 10))
-            total = _query.order_by(Project.update_time.desc()).count()
-            pagination = _query.order_by(Project.update_time.desc()).paginate(page = page, per_page= size, error_out=False)
-            result = {"total": total, "projects":[]}
-            result["projects"] = [{"id":pj.id,
-                               "name": pj.name, 
-                               "module":pj.module, 
-                               "comment": pj.comment, 
-                               "c_time": pj.create_time.strftime("%Y-%m-%d %H:%M:%S"),
-                               "u_time": pj.update_time.strftime("%Y-%m-%d %H:%M:%S")
-                               } for pj in pagination.items]
-            return jsonify(get_result(result, message = "get all projects success in page: {0} size: {1}.".format(page, size)))
+        param = dict(request.args.items())        
+        _query = get_query()    
         
-        # GET /manager?proj_id=32342
-        if pj:            
-            status = True
-            result = {"id":pj.id,"name": pj.name, "module":pj.module, "comment": pj.comment}
-            message = "get project success."
-        else:
-            status = False
-            result = ""
-            message = "do not have the project with proj_id({})".format(param.get("proj_id"))
-        return jsonify(get_result(result, status = status,message = message))
+        conditions = {i: param.get(i) for i in ('id', 'name', 'module') if param.get(i)}        
+        base_conditions = _query.filter_by(**conditions).order_by(Project.update_time.desc())
+                
+        page = int(param.get("page", 1))
+        size = int(param.get("size", 10))        
+        total = base_conditions.count()
+        pagination = base_conditions.paginate(page = page, per_page= size, error_out=False)
+        
+        result = {"total": total, "projects":[]}
+        result["projects"] = [{"id":pj.id,
+                           "name": pj.name, 
+                           "module":pj.module, 
+                           "comment": pj.comment, 
+                           "c_time": pj.create_time.strftime("%Y-%m-%d %H:%M:%S"),
+                           "u_time": pj.update_time.strftime("%Y-%m-%d %H:%M:%S")
+                           } for pj in pagination.items]
+        
+        return jsonify(get_result(result, message = "get all projects success in page: {0} size: {1}.".format(page, size)))
+        
     
-    elif request.method == "POST":   
-        # POST /manager    
+    def post(self):
+        # POST /manager
+        j_param = request.json if request.data else request.form.to_dict()
+        _query = get_query()  
+        now = datetime.datetime.now() 
+            
         try:
             for param in ("name", "module"):
                 if not j_param.get(param):
@@ -94,10 +91,55 @@ def manage_project():
         #return redirect(url_for("project.search"))
         return jsonify(get_result("", status = status, message = message))
     
-    elif request.method == "DELETE":
+    def put(self):
+        # PUT /?proj_id=32342
+        param = dict(request.args.items())
+        j_param = request.json if request.data else request.form.to_dict()
+        _query = get_query()                
+        now = datetime.datetime.now()
+        
+        try:
+            project_data = _query.filter_by(id = param.get("proj_id")).first()
+                                    
+            if not project_data:
+                message = "do not have the project with proj_id({})".format(param.get("proj_id"))
+                return jsonify(get_result("", status = False, message = message))
+            
+            for param in ("name", "module"):
+                if not j_param.get(param):
+                    return jsonify(get_result("", status = False, message = 'project parameter [{0}] should not be null.'.format(param)))
+                
+            for i in ["name", "module", "comment"]:
+                setattr(project_data, i, j_param.get(i,""))
+            project_data.update_time = now
+            
+            status = True
+            message = "update project success."
+            db.session.flush()
+            db.session.commit()    
+            
+        except Exception as e:
+            message = str(e)
+            status = False
+    
+        return jsonify(get_result("", status = status, message = message))     
+        
+    def delete(self):
         # DELETE /manager?proj_id=32342
-        if pj:
-            db.session.delete(pj)
+        param = dict(request.args.items())        
+        _query = get_query()
+        _query_relation = get_relation_query() 
+        
+        project_data = _query.filter_by(id = param.get("proj_id")).first()
+                
+        if project_data:
+            db.session.delete(project_data)
+            
+            relation_datas = _query_relation.filter_by(project_id = param.get("proj_id")).all()
+            
+            for relation_data in relation_datas:
+                db.session.delete(relation_data)
+                            
             db.session.commit()
             status = True
             message = "delete project success."        
@@ -105,44 +147,9 @@ def manage_project():
             status = False
             message = "do not have the project with proj_id({})".format(param.get("proj_id"))
         return jsonify(get_result("", status = status,message = message))
-    
-    elif request.method == "PUT":
-        # PUT /?proj_id=32342
-        if pj:
-            for param in ("name", "module"):
-                if not j_param.get(param):
-                    return jsonify(get_result("", status = False, message = 'project {0} should not be null.'.format(param)))
-                
-            for i in ["name", "module", "comment"]:
-                setattr(pj, i, j_param.get(i,""))
-            pj.update_time = now
-            status = True
-            message = "update project success."
-            db.session.flush()
-            db.session.commit()
-        else:
-            status = False
-            message = "do not have the project with proj_id({})".format(param.get("proj_id"))
-        return jsonify(get_result("", status = status,message = message))
-    
 
-@project.route("/test", methods = ["GET"])
-@login_required
-def test():
-    param = dict(request.args.items())    
-    _query = get_query()
-     
-    if request.method == "GET":
-        page = int(param.get("page", 0))
-        size = int(param.get("size", 10))
-        pagination = _query.order_by(Project.update_time.desc()).paginate(page = page, per_page= size, error_out=False)
-        result = [{"id":pj.id,
-                           "name": pj.name, 
-                           "module":pj.module, 
-                           "comment": pj.comment, 
-                           "c_time": pj.create_time.strftime("%Y-%m-%d %H:%M:%S"),
-                           "u_time": pj.update_time.strftime("%Y-%m-%d %H:%M:%S")
-                           } for pj in pagination.items]
-        return jsonify(get_result(result, message = "get all projects success in page: {0} size: {1}.".format(page, size)))
-    
-        
+
+
+# _project_view_manager = login_required(ProjectView.as_view('project_view_manager'))
+_project_view_manager = ProjectView.as_view('project_view_manager')
+project.add_url_rule('/manager', view_func=_project_view_manager)
