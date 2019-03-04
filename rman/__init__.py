@@ -6,7 +6,7 @@ from flask_cors import CORS
 from flask_login import LoginManager
 from flask_bcrypt import Bcrypt
 
-from rman.config import config
+from rman.config import APP_ENV, configs
 from rman.log import console,log_handler,err_handler
 
 from werkzeug.contrib.cache import SimpleCache
@@ -21,11 +21,11 @@ cors = CORS()
 login_manager = LoginManager()
 bcrypt = Bcrypt()
 
-def create_app(env=None):
+def create_app():
     app = Flask(__name__)
-    configuration = config[env] if env else config["testing"]
+    configuration = configs[APP_ENV]
     
-    if env == 'production':
+    if APP_ENV == 'production':
         logger.addHandler(log_handler)
         logger.addHandler(err_handler)
 
@@ -51,9 +51,7 @@ def create_app(env=None):
 
     return app
 
-
-env = "testing"
-app = create_app(env)
+app = create_app()
 
 
 # 加载顶层视图函数，缺少下面的语句会导致views中的视图函数注册失败

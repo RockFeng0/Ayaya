@@ -17,6 +17,7 @@ v1.0    Original version to use
 Provide a function for the automation test
 
 '''
+APP_ENV = 'testing'
 
 class Config(object):
     # 防止返回的json中汉字被转码
@@ -53,4 +54,4 @@ class DevConfig(Config):
     DEBUG=True    
     SQLALCHEMY_DATABASE_URI = "sqlite:///rman.db"
 
-config = {"production":ProdConfig, "testing":DevConfig}
+configs = {"production":ProdConfig, "testing":DevConfig}
