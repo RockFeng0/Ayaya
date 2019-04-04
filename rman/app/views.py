@@ -17,20 +17,11 @@ v1.0    Original version to use
 Provide a function for the automation test
 
 '''
-
-import logging
-
-from flask import redirect
-from rman import app
+from flask import send_file
+from rman.app import APP
 
 
-# 获取日志操作句柄
-logger = logging.getLogger(__name__)
-
-@app.route("/")
+@APP.route('/', methods = ["GET"])
 def index():
-    return redirect('http://127.0.0.1:8080/login')
+    return send_file('index.html')
 
-@app.after_request
-def after_request(response):
-    return response

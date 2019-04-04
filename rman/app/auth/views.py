@@ -17,9 +17,9 @@ v1.0    Original version to use
 Provide a function for the automation test
 
 '''
-from rman import login_manager,simple_cache
-from rman.auth import auth
-from rman.auth.models import User, db
+from rman.app import login_manager,simple_cache
+from rman.app.auth import auth
+from rman.app.auth.models import User, db
 
 import datetime
 from itsdangerous import URLSafeSerializer, BadData
@@ -30,7 +30,8 @@ def get_result(result, status=True, message="success" ):
     return {"status":status, "message":message,"result":result}
 
 def get_query():
-    return User.query
+    # return User.query
+    return db.session.query(User)
 
 
 @login_manager.user_loader

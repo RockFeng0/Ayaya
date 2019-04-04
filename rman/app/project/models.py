@@ -18,7 +18,7 @@ Provide a function for the automation test
 
 '''
 
-from rman import db
+from rman.app import db
 from sqlalchemy import Column, Integer, String, SmallInteger, DateTime
 
 class Project(db.Model):

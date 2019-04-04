@@ -22,8 +22,8 @@ from flask import request, jsonify
 from flask_login import login_required
 from flask.views import MethodView
 
-from rman.project import project
-from rman.project.models import Project, CaseProjectRelation, db
+from rman.app.project import project
+from rman.app.project.models import Project, CaseProjectRelation, db
 
 def get_result(result, status=True, message="success" ):
     return {"status":status, "message":message,"result":result}

@@ -17,13 +17,9 @@ v1.0    Original version to use
 Provide a function for the automation test
 
 '''
-from rman import app, db
+from rman.app import APP, db
 from flask_migrate import Migrate
 
-from rman.auth.models import User
-from rman.httptest.models import Case, CaseItemRequest
-from rman.project.models import Project
-
-migrate = Migrate(app,db)
+migrate = Migrate(APP,db)
 
 

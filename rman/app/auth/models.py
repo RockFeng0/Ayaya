@@ -18,7 +18,7 @@ Provide a function for the automation test
 
 '''
 
-from rman import db, bcrypt
+from rman.app import db, bcrypt
 from sqlalchemy import Column, Integer, String, SmallInteger, DateTime
 from flask import current_app
 from flask_login import UserMixin

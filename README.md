@@ -1,2 +1,10 @@
 # rtsf-manager
-rtsf用例管理系统。虽然不擅长，也不是全栈码农，但是我想，rtsf系列测试框架，既然已经支持command line，也就可以支持持续集成了，框架工作到一段落，仅剩下后续的维护和迭代优化， 那么，我还是开始这个项目吧。用例管理系统，嗯嗯，基于flask+mysql+celery+vue，前后端摸索着来做吧
+
+
+# 其他备忘
+C:\d_disk\auto\git-daojia-inc\bztest\bztest>set FLASK_APP=manager
+
+__init__.py 切换到了测试环境
+
+```
+C:\d_disk\auto\git-daojia-inc\bztest\bztest>py -2 -m flask db init -d migrations_testing

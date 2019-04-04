@@ -17,7 +17,7 @@ v1.0    Original version to use
 Provide a function for the automation test
 
 '''
-APP_ENV = 'testing'
+import sys, os
 
 class Config(object):
     # 防止返回的json中汉字被转码
@@ -35,23 +35,26 @@ class Config(object):
     REMEMBER_COOKIE_NAME = "token"
     
     # 蓝图开关
-    ALL_BLUE_PRINT = {"auth":True, "httptest":True, "project":True}
+    ALL_BLUE_PRINT = {"auth":False, "httptest":True, "project":True}
     
     @staticmethod
     def init_app(app):
         pass
     
-class ProdConfig(Config):
-    host = "localhost"
-    port = 3306
-    user = "xxx"
-    passwd = "xxx"
-    name = 'rman'
+class ProdConfig(Config):    
+    # sqlalchemy mysql
     
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://{0}:{1}@{2}:{3}/{4}?charset=utf8mb4'.format(user,passwd,host,user,name)    
- 
+    USERNAME = "xxx"
+    PASSWORD = "xxx"
+    HOST = "localhost"
+    PORT = 3306
+    DATABASE = 'dbcs_qa_biz_rman'    
+     
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://{0}:{1}@{2}:{3}/{4}?charset=utf8mb4'.format(USERNAME,PASSWORD,HOST,PORT,DATABASE)   
+    
+    
 class DevConfig(Config):
-    DEBUG=True    
-    SQLALCHEMY_DATABASE_URI = "sqlite:///rman.db"
+    DEBUG=True
+    SQLALCHEMY_DATABASE_URI = "sqlite:///{}".format(os.path.join(sys.path[0], "rman.db"))
 
 configs = {"production":ProdConfig, "testing":DevConfig}

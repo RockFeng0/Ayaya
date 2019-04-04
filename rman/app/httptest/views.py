@@ -23,24 +23,24 @@ from flask import request, jsonify
 from flask_login import login_required
 from flask.views import MethodView
 
-from rman.httptest import httptest
-from rman.httptest.models import Case, CaseItemRequest, db
-from rman.project.models import Project, CaseProjectRelation
+from rman.app.httptest import httptest
+from rman.app.httptest.models import Case, CaseItemRequest, db
+from rman.app.project.models import Project, CaseProjectRelation
 
 def get_result(result, status=True, message="success" ):
     return {"status":status, "message":message,"result":result}
 
 def get_case_query():
-    return Case.query
+    return db.session.query(Case)
 
 def get_case_item_request_query():
-    return CaseItemRequest.query
+    return db.session.query(CaseItemRequest)
 
 def get_project_query():
-    return Project.query
+    return db.session.query(Project)
 
 def get_relation_query():
-    return CaseProjectRelation.query
+    return db.session.query(CaseProjectRelation)
 
 def get_case_join_project_query():    
     return db.session.query(Case, Project.name)\

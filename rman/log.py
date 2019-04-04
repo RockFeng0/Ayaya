@@ -52,3 +52,31 @@ console.setFormatter(formatter)
 log_handler.setLevel(logging.DEBUG)
 err_handler.setLevel(logging.ERROR)
 console.setLevel(logging.DEBUG)
+
+
+'''
+Python 2.7.14 (v2.7.14:84471935ed, Sep 16 2017, 20:25:58) [MSC v.1500 64 bit (AMD64)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import sys
+>>> sys.getdefaultencoding()
+'ascii'
+
+Python 3.6.5 (v3.6.5:f59c0932b4, Mar 28 2018, 17:00:18) [MSC v.1900 64 bit (AMD64)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import sys
+>>> sys.getdefaultencoding()
+'utf-8'
+
+# 使用 文件日志的handle时，需要python解释器为 utf-8编码
+'''
+
+if sys.getdefaultencoding() != "utf-8":
+    # python 2
+    try:
+        reload(sys)
+        getattr(sys, "setdefaultencoding")('utf-8')
+    except:
+        # python3
+        import importlib
+        importlib.reload(sys)
+    
