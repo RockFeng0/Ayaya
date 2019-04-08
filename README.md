@@ -2,9 +2,5 @@
 
 
 # 其他备忘
-C:\d_disk\auto\git-daojia-inc\bztest\bztest>set FLASK_APP=manager
-
-__init__.py 切换到了测试环境
-
-```
-C:\d_disk\auto\git-daojia-inc\bztest\bztest>py -2 -m flask db init -d migrations_testing
+(test_pj) C:\d_disk\auto\git\rtsf-manager\rman>set flask_app=manager
+(test_pj) C:\d_disk\auto\git\rtsf-manager\rman>flask db init -d migrations_testing

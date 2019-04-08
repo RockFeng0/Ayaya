@@ -55,6 +55,6 @@ class ProdConfig(Config):
     
 class DevConfig(Config):
     DEBUG=True
-    SQLALCHEMY_DATABASE_URI = "sqlite:///{}".format(os.path.join(sys.path[0], "rman.db"))
+    SQLALCHEMY_DATABASE_URI = "sqlite:///{}".format(os.path.join(os.path.dirname(sys.path[0]), "rman.db"))
 
 configs = {"production":ProdConfig, "testing":DevConfig}
