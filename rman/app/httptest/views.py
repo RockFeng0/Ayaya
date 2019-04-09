@@ -18,7 +18,7 @@ Provide a function for the automation test
 
 '''
 
-import datetime
+import datetime, json
 from flask import request, jsonify
 from flask_login import login_required
 from flask.views import MethodView
@@ -44,49 +44,49 @@ def get_case_requests_query():
     return db.session.query(CaseRequests)
 
 def get_case_join_project_query():    
-    return db.session.query(Case, Project.name)\
+    return db.session.query(Case, Project)\
         .join(CaseProjectRelation,Case.id == CaseProjectRelation.case_id)\
         .join(Project, CaseProjectRelation.project_id == Project.id)
         
 def get_requests_join_case_query():
-    return db.session.query(CaseRequests).join(Case, CaseRequests.case_id == Case.id)    
+    return db.session.query(CaseRequests, Case).join(Case, CaseRequests.case_id == Case.id)    
 
 class CaseView(MethodView):
     
     def get(self):
-        # GET /case?page=1&size=10        
-        param = dict(request.args.items())        
-#         _query = get_case_query()   
-#         _query_project = get_project_query() 
+        # GET /case?page=1&size=10&case_?=?&proj_?=?
+        param = dict(request.args.items())
         _query_case_join_project = get_case_join_project_query()
-                     
-        conditions = {i: param.get(i) for i in ('id', 'name', 'responsible', 'tester', 'case_type') if param.get(i)}
-        base_conditions = _query_case_join_project.filter_by(**conditions).order_by(Case.update_time.desc())
-        print(base_conditions)
-                
+        
+        case_conditions = {getattr(Case, i) == param.get("case_%s" %i) for i in ('id', 'name', 'responsible', 'tester', 'type') if param.get("case_%s" %i)}
+        proj_conditions = {getattr(Project, i) == param.get("proj_%s" %i) for i in ('id', 'name', 'module') if param.get("proj_%s" %i)}
+        conditions = case_conditions.union(proj_conditions)
+        base_conditions = _query_case_join_project.filter(*conditions).order_by(Case.update_time.desc())
+                        
         page = int(param.get("page", 1))
         size = int(param.get("size", 10))        
         total = base_conditions.count()
         pagination = base_conditions.paginate(page = page, per_page= size, error_out=False)
         
         result = {"total": total, "cases":[]}
-        print(pagination.items)
+               
         for case in pagination.items:
-#             project = _query_project.filter_by(id = case.project_id).first()
-            
+            print(dir(case))
+            case_data = case.Case
+            proj_data = case.Project
             _case = {
-#                 "id":case.id,
-                "name": case.name, 
-                "desc":case.desc, 
-                "responsible": case.responsible,
-                "tester": case.tester,
-                "case_type": case.case_type,
-                "func": case.func,
-#                 "project_id": case.project_id,
-                "project_name": case.project_name,
-                
-                "c_time": case.create_time.strftime("%Y-%m-%d %H:%M:%S"),
-                "u_time": case.update_time.strftime("%Y-%m-%d %H:%M:%S")
+                "id":case_data.id,
+                "name": case_data.name, 
+                "desc":case_data.desc, 
+                "responsible": case_data.responsible,
+                "tester": case_data.tester,
+                "case_type": case_data.case_type,
+                "func": case_data.func,
+                "project_name": proj_data.name,
+                "project_module": proj_data.module,
+                   
+                "c_time": case_data.create_time.strftime("%Y-%m-%d %H:%M:%S"),
+                "u_time": case_data.update_time.strftime("%Y-%m-%d %H:%M:%S")
             }
             result["cases"].append(_case)
         
@@ -207,10 +207,12 @@ class CaseView(MethodView):
         if case_data:
             db.session.delete(case_data)
             
+            # delete case_project_relation
             relation_datas = _query_relation.filter_by(case_id = param.get("case_id")).all()
             for relation_data in relation_datas:            
                 db.session.delete(relation_data)
-                
+            
+            # delete case_requests
             case_requests_datas = _query_case_requests.filter_by(case_id = param.get("case_id")).all()
             for case_requests_data in case_requests_datas:            
                 db.session.delete(case_requests_data)
@@ -226,13 +228,13 @@ class CaseView(MethodView):
 class CaseRequestsView(MethodView):
     
     def get(self):
-        # GET /case_requests?page=1&size=10
+        # GET /case_requests?page=1&size=10&case_?=?
         
         param = dict(request.args.items())
         _query_requests_join_case = get_requests_join_case_query()
-                     
-        conditions = {getattr(Case,i): param.get(i) for i in ('id', 'name', 'responsible', 'tester', 'case_type') if param.get(i)}        
-        base_conditions = _query_requests_join_case.filter_by(**conditions).order_by(Case.update_time.desc())
+        
+        conditions = {getattr(Case,i) == param.get("case_%s" %i) for i in ('id', 'name', 'responsible', 'tester', 'case_type') if param.get("case_%s" %i)}        
+        base_conditions = _query_requests_join_case.filter(*conditions).order_by(Case.update_time.desc())
                 
         page = int(param.get("page", 1))
         size = int(param.get("size", 10))        
@@ -241,67 +243,72 @@ class CaseRequestsView(MethodView):
         
         result = {"total": total, "cases":[]}
         for case in pagination.items:
-           
+            case_data = case.Case
+            case_req_data = case.CaseRequests           
             _case = {
-                "id":case.id,
-                "name": case.name, 
-                "desc":case.desc, 
-                "responsible": case.responsible,
-                "tester": case.tester,
-                "case_type": case.case_type,
-                "func": case.func,
+                "id":case_data.id,
+                "name": case_data.name, 
+                "desc":case_data.desc, 
+                "responsible": case_data.responsible,
+                "tester": case_data.tester,
+                "case_type": case_data.case_type,
+                "func": case_data.func,
                 
-                "glob_var": case.glob_var,
-                "glob_regx": case.glob_regx,                
-                "pre_command":case.pre_command,
-                "url":case.url,
-                "method":case.method,
-                "hearders":case.hearders,
-                "body":case.body,
-                "post_command":case.post_command,
-                "verify":case.verify,
+                "glob_var": case_req_data.glob_var,
+                "glob_regx": case_req_data.glob_regx,                
+                "pre_command":case_req_data.pre_command,
+                "url":case_req_data.url,
+                "method":case_req_data.method,
+                "hearders":case_req_data.hearders,
+                "body":case_req_data.body,
+                "post_command":case_req_data.post_command,
+                "verify":case_req_data.verify,
                 
                 
-                "c_time": case.create_time.strftime("%Y-%m-%d %H:%M:%S"),
-                "u_time": case.update_time.strftime("%Y-%m-%d %H:%M:%S")
+                "c_time": case_req_data.create_time.strftime("%Y-%m-%d %H:%M:%S"),
+                "u_time": case_req_data.update_time.strftime("%Y-%m-%d %H:%M:%S")
             }
-            result["cases"].append(_case)
+            result["case_requests"].append(_case)
         
         return jsonify(get_result(result, message = "get all cases_requests success in page: {0} size: {1}.".format(page, size)))
     
     
     def post(self):
-        # POST /case_requests        
+        # POST /case_requests?case_id=1
+        param = dict(request.args.items()) 
         j_param = request.json if request.data else request.form.to_dict()
         _query = get_case_requests_query()
         _query_case = get_case_query()       
         now = datetime.datetime.now()
         
+        case_data = _query_case.filter_by(id = param.get("case_id")).first()
+                    
         try:
             
-            for param in ("url", "method", "case_name"):
+            for param in ("url", "method"):
                 _param = j_param.get(param)
                 if not _param:
                     return jsonify(get_result("", status = False, message = 'CaseRequests parameter [{0}] should not be null.'.format(param)))
                                                     
-            status = True
-            case_data = _query_case.filter_by(name = j_param.get("case_name")).first()
-            
+            status = True            
             if not case_data:
                 status = False
                 message = "Do not have this case named '{0}'.".format(j_param.get("case_data"))
                             
+            elif _query.filter_by(case_id = case_data.id).first():
+                status = False
+                message = "The requests of this case_id[{0}]  already exists.".format(case_data.id)
             else:
-                _case_requests = CaseRequests(j_param.get("glob_var", {}),
-                     j_param.get("glob_regx",{}), 
-                     j_param.get("pre_command",[]),
-                     j_param.get("url"),
-                     j_param.get("method"),
-                     j_param.get("hearders", {}),
-                     j_param.get("body", {}),
-                     j_param.get("post_command",[]),
-                     j_param.get("verify",[]),
-                     case_data.id,now, now)                
+                _case_requests = CaseRequests(j_param.get("glob_var", '{}'),
+                    j_param.get("glob_regx",'{}'), 
+                    j_param.get("pre_command",'[]'),
+                    j_param.get("url"),
+                    j_param.get("method"),
+                    j_param.get("hearders", '{}'),
+                    j_param.get("body", '{}'),
+                    j_param.get("post_command",'[]'),
+                    j_param.get("verify",'[]'),
+                    case_data.id,now, now)
                 db.session.add(_case_requests)
                 db.session.commit()
                                                
@@ -314,33 +321,20 @@ class CaseRequestsView(MethodView):
         return jsonify(get_result("", status = status, message = message))
     
     def put(self):
-        # PUT /case_requests?case_requests_id=32342
+        # PUT /case_requests?id=32342
         param = dict(request.args.items())
         j_param = request.json if request.data else request.form.to_dict()
         _query = get_case_requests_query()                
         now = datetime.datetime.now()
         
         try: 
-            case_requests_data = _query.filter_by(id = param.get("case_requests_id")).first()
-                                    
+            case_requests_data = _query.filter_by(id = param.get("id")).first()
+            
             if not case_requests_data:
-                message = "do not have the case_requests with case_requests_id({})".format(param.get("case_requests_id"))
+                message = "do not have the case_requests with id({})".format(param.get("id"))
                 return jsonify(get_result("", status = False, message = message))
             
-            for pp in ("url", "method"):
-                _param = j_param.get(pp)
-                if not _param:
-                    return jsonify(get_result("", status = False, message = 'CaseRequests parameter [{0}] should not be null.'.format(pp)))
-                
-            
-            for i in ["glob_var", "glob_regx", "hearders", "body"]:
-                setattr(case_requests_data, i, j_param.get(i,{}))
-            
-            for i in ["pre_command", "post_command", "verify"]:
-                setattr(case_requests_data, i, j_param.get(i,[]))
-                
-            case_requests_data.url = j_param.get("url")
-            case_requests_data.method = j_param.get("method")
+            _ = [setattr(case_requests_data, i, j_param.get(i)) for i in ["url","method","glob_var", "glob_regx", "hearders", "body", "pre_command", "post_command", "verify"] if j_param.get(i)]                
             case_requests_data.update_time = now
                                     
             status = True
@@ -354,10 +348,10 @@ class CaseRequestsView(MethodView):
         return jsonify(get_result("", status = status, message = message))       
     
     def delete(self):
-        # DELETE /case_requests?case_requests_id=32342
+        # DELETE /case_requests?id=32342
         param = dict(request.args.items())
         _query = get_case_requests_query()        
-        case_requests_data = _query.filter_by(id = param.get("case_requests_id")).first()
+        case_requests_data = _query.filter_by(id = param.get("id")).first()
         
         if case_requests_data:
             db.session.delete(case_requests_data)                            
@@ -366,7 +360,7 @@ class CaseRequestsView(MethodView):
             message = "delete case_requests success."        
         else:
             status = False
-            message = "do not have the case_requests with case_requests_id({})".format(param.get("case_requests_id"))
+            message = "do not have the case_requests with id({})".format(param.get("id"))
         return jsonify(get_result("", status = status,message = message))
 
 
@@ -380,11 +374,6 @@ class CaseRecordView(MethodView):
     
     def put(self):
         pass
-
-    
-@httptest.route('/test', methods= ['GET'])
-def test():
-    return 'good'
 
 if APP_ENV == "production":
     _case_view_manager = login_required(CaseView.as_view('case_view_manager'))
