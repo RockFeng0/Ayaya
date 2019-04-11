@@ -30,13 +30,13 @@ class Case(db.Model):
     desc            = Column(String(64), comment = '用例的简单描述')    
     responsible     = Column(String(32), comment = '测试责任人或者用例编写人员')
     tester          = Column(String(32), comment = '测试执行人或者运行该用例的人员')
-    case_type       = Column(SmallInteger, default = 0, comment = '0-api, 1-case, 2-suite')
-    func            = Column(String(64), nullable = False, comment = 'api或者suite的函数名称(必填)， case无要求')    
+    case_type       = Column(String(10), nullable = False, default = "case", comment = '0-api, 1-case, 2-suite')
+    func            = Column(String(64), nullable = True, comment = 'api或者suite的函数名称(必填)， case无要求')    
         
     create_time     = Column(DateTime, nullable = False)
     update_time     = Column(DateTime, nullable = False)
 
-    def __init__(self, name,desc,responsible,tester,func, case_type,create_time,update_time):
+    def __init__(self, name,desc,responsible,tester,case_type, func, create_time,update_time):
         self.name        = name        
         self.desc        = desc       
         self.responsible = responsible
