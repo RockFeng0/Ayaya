@@ -99,7 +99,7 @@ class CaseView(MethodView):
         
         try:
             
-            for param in ("name", "case_type", "project_name"):
+            for param in ("name", "case_type", "project_name", "project_module"):
                 _param = j_param.get(param)
                 if not _param:
                     return jsonify(get_result("", status = False, message = 'Case parameter [{0}] should not be null.'.format(param)))
@@ -117,7 +117,7 @@ class CaseView(MethodView):
                     
             status = True
             case_data = _query.filter_by(name = j_param.get("name")).first()
-            project_data = _query_project.filter_by(name = j_param.get("project_name")).first()
+            project_data = _query_project.filter_by(name = j_param.get("project_name"), module = j_param.get("project_module")).first()
             
             if case_data:
                 status = False

@@ -1,0 +1,123 @@
+2019-04-08 15:12:45,650 - rman.app - create_app - 47 -【ERROR】- **** fail	 module[httptest]
+Traceback (most recent call last):
+  File "C:\d_disk\auto\git\rtsf-manager\rman\app\__init__.py", line 44, in create_app
+    obj = importlib.import_module("rman.app.{0}".format(module_name))
+  File "c:\users\58-pc\virtualenvs\test_pj\lib\importlib\__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 994, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 971, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 955, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 665, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 219, in _call_with_frames_removed
+  File "C:\d_disk\auto\git\rtsf-manager\rman\app\httptest\__init__.py", line 4, in <module>
+    from . import views
+  File "C:\d_disk\auto\git\rtsf-manager\rman\app\httptest\views.py", line 27, in <module>
+    from rman.app.httptest.models import Case, CaseItemRequest, db
+ImportError: cannot import name 'CaseItemRequest'
+2019-04-08 15:13:01,529 - rman.app - create_app - 47 -【ERROR】- **** fail	 module[httptest]
+Traceback (most recent call last):
+  File "C:\d_disk\auto\git\rtsf-manager\rman\app\__init__.py", line 44, in create_app
+    obj = importlib.import_module("rman.app.{0}".format(module_name))
+  File "c:\users\58-pc\virtualenvs\test_pj\lib\importlib\__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 994, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 971, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 955, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 665, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 219, in _call_with_frames_removed
+  File "C:\d_disk\auto\git\rtsf-manager\rman\app\httptest\__init__.py", line 4, in <module>
+    from . import views
+  File "C:\d_disk\auto\git\rtsf-manager\rman\app\httptest\views.py", line 27, in <module>
+    from rman.app.httptest.models import Case, CaseItemRequest, db
+ImportError: cannot import name 'CaseItemRequest'
+2019-04-08 15:14:58,049 - rman.app - create_app - 47 -【ERROR】- **** fail	 module[httptest]
+Traceback (most recent call last):
+  File "C:\d_disk\auto\git\rtsf-manager\rman\app\__init__.py", line 44, in create_app
+    obj = importlib.import_module("rman.app.{0}".format(module_name))
+  File "c:\users\58-pc\virtualenvs\test_pj\lib\importlib\__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 994, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 971, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 955, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 665, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 219, in _call_with_frames_removed
+  File "C:\d_disk\auto\git\rtsf-manager\rman\app\httptest\__init__.py", line 4, in <module>
+    from . import views
+  File "C:\d_disk\auto\git\rtsf-manager\rman\app\httptest\views.py", line 27, in <module>
+    from rman.app.httptest.models import Case, CaseItemRequest, db
+ImportError: cannot import name 'CaseItemRequest'
+2019-04-08 19:19:41,785 - rman.app - create_app - 47 -【ERROR】- **** fail	 module[httptest]
+Traceback (most recent call last):
+  File "C:\d_disk\auto\git\rtsf-manager\rman\app\__init__.py", line 44, in create_app
+    obj = importlib.import_module("rman.app.{0}".format(module_name))
+  File "C:\Users\58-pc\VirtualEnvs\test_pj\lib\importlib\__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 994, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 971, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 955, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 665, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 219, in _call_with_frames_removed
+  File "C:\d_disk\auto\git\rtsf-manager\rman\app\httptest\__init__.py", line 4, in <module>
+    from . import views
+  File "C:\d_disk\auto\git\rtsf-manager\rman\app\httptest\views.py", line 63
+    conditions = {"case.%s"i: param.get(i) for i in ('id', 'name', 'responsible', 'tester', 'case_type') if param.get(i)}
+                           ^
+SyntaxError: invalid syntax
+2019-04-09 11:11:40,945 - rman.app - create_app - 47 -【ERROR】- **** fail	 module[httptest]
+Traceback (most recent call last):
+  File "C:\d_disk\auto\git\rtsf-manager\rman\app\__init__.py", line 44, in create_app
+    obj = importlib.import_module("rman.app.{0}".format(module_name))
+  File "C:\Users\58-pc\VirtualEnvs\test_pj\lib\importlib\__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 994, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 971, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 955, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 665, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 219, in _call_with_frames_removed
+  File "C:\d_disk\auto\git\rtsf-manager\rman\app\httptest\__init__.py", line 4, in <module>
+    from . import views
+  File "C:\d_disk\auto\git\rtsf-manager\rman\app\httptest\views.py", line 65
+    print(base_conditions。all())
+                            ^
+SyntaxError: invalid character in identifier
+2019-04-09 14:16:12,731 - rman.app - create_app - 47 -【ERROR】- **** fail	 module[httptest]
+Traceback (most recent call last):
+  File "C:\d_disk\auto\git\rtsf-manager\rman\app\__init__.py", line 44, in create_app
+    obj = importlib.import_module("rman.app.{0}".format(module_name))
+  File "C:\Users\58-pc\VirtualEnvs\test_pj\lib\importlib\__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 994, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 971, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 955, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 665, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 219, in _call_with_frames_removed
+  File "C:\d_disk\auto\git\rtsf-manager\rman\app\httptest\__init__.py", line 4, in <module>
+    from . import views
+  File "C:\d_disk\auto\git\rtsf-manager\rman\app\httptest\views.py", line 47
+    return db.session.query(Case.*, Project.name, Project.module)\
+                                 ^
+SyntaxError: invalid syntax
+2019-04-09 14:38:07,826 - rman.app - create_app - 47 -【ERROR】- **** fail	 module[httptest]
+Traceback (most recent call last):
+  File "C:\d_disk\auto\git\rtsf-manager\rman\app\__init__.py", line 44, in create_app
+    obj = importlib.import_module("rman.app.{0}".format(module_name))
+  File "C:\Users\58-pc\VirtualEnvs\test_pj\lib\importlib\__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 994, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 971, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 955, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 665, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 219, in _call_with_frames_removed
+  File "C:\d_disk\auto\git\rtsf-manager\rman\app\httptest\__init__.py", line 4, in <module>
+    from . import views
+  File "C:\d_disk\auto\git\rtsf-manager\rman\app\httptest\views.py", line 246
+    _case = {
+    ^
+IndentationError: unexpected indent
