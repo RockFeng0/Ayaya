@@ -34,7 +34,7 @@ def get_query():
 def get_relation_query():
     return db.session.query(CaseProjectRelation)
 
-        
+
 class ProjectView(MethodView):
     
     def get(self):

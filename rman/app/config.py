@@ -35,7 +35,7 @@ class Config(object):
     REMEMBER_COOKIE_NAME = "token"
     
     # 蓝图开关
-    ALL_BLUE_PRINT = {"auth":False, "httptest":True, "project":True}
+    ALL_BLUE_PRINT = {"auth":False, "project":True, "case":True, "httptest":True}
     
     @staticmethod
     def init_app(app):
@@ -52,9 +52,9 @@ class ProdConfig(Config):
      
     SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://{0}:{1}@{2}:{3}/{4}?charset=utf8mb4'.format(USERNAME,PASSWORD,HOST,PORT,DATABASE)   
     
-    
 class DevConfig(Config):
     DEBUG=True
-    SQLALCHEMY_DATABASE_URI = "sqlite:///{}".format(os.path.join(os.path.dirname(sys.path[0]), "rman.db"))
+    #print(os.path.join(os.path.dirname(os.path.dirname(__file__)), "rman.db"))
+    SQLALCHEMY_DATABASE_URI = "sqlite:///{}".format(os.path.join(os.path.dirname(os.path.dirname(__file__)), "rman.db"))
 
 configs = {"production":ProdConfig, "testing":DevConfig}
