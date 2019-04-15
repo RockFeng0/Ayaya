@@ -41,11 +41,13 @@ def distinct_col():
     param = dict(request.args.items())  
     _query = get_query()
     c_name = param.get("col_name")
+    print(c_name)
     if not c_name in ("name", "module"):
         return jsonify(get_result("", status = False, message = 'col_name should be in (name, module) for the Project table.'))
     
     lines  = _query.with_entities(getattr(Project, c_name)).distinct().all()
-    result = [{"value": line[0]} for line in lines if line]    
+    result = [{"value": line[0]} for line in lines if line]   
+    print(result) 
     return jsonify(get_result(result, message = "get all project {} success.".format(c_name)))
     
 class ProjectView(MethodView):
@@ -138,28 +140,34 @@ class ProjectView(MethodView):
         return jsonify(get_result("", status = status, message = message))     
         
     def delete(self):
-        # DELETE /manager?proj_id=32342
-        param = dict(request.args.items())        
+        # DELETE /manager?ids='1,2,3,4,5'
+        param = dict(request.args.items())     
+        
         _query = get_query()
         _query_relation = get_relation_query() 
         
-        project_data = _query.filter_by(id = param.get("proj_id")).first()
+        proj_ids = param.get("ids").split(',')        
+        result = {"delete_result":{}}
+        for proj_id in proj_ids:
+            project_data = _query.filter_by(id = proj_id).first()
+                    
+            if project_data:
+                db.session.delete(project_data)
                 
-        if project_data:
-            db.session.delete(project_data)
-            
-            relation_datas = _query_relation.filter_by(project_id = param.get("proj_id")).all()
-            
-            for relation_data in relation_datas:
-                db.session.delete(relation_data)
-                            
-            db.session.commit()
-            status = True
-            message = "delete project success."        
-        else:
-            status = False
-            message = "do not have the project with proj_id({})".format(param.get("proj_id"))
-        return jsonify(get_result("", status = status,message = message))
+                relation_datas = _query_relation.filter_by(project_id = proj_id).all()
+                
+                for relation_data in relation_datas:
+                    db.session.delete(relation_data)
+                                
+                db.session.commit()
+                result["delete_result"][proj_id] = True                    
+            else:
+                result["delete_result"][proj_id] = False
+        
+        status = False if False in result["delete_result"].values() else True        
+        message = "delete project done."    
+        
+        return jsonify(get_result(result, status = status,message = message))
 
 
 

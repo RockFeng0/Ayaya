@@ -190,37 +190,41 @@ class CaseView(MethodView):
             status = False
     
         return jsonify(get_result("", status = status, message = message))       
-        
-    
+                
     def delete(self):
-        # DELETE /manager?case_id=32342
+        # DELETE /manager?ids='1,2,3,4,5'
         param = dict(request.args.items())
         _query = get_case_query()
         _query_relation = get_relation_query()
         _query_case_requests = get_case_requests_query()
         
-        case_data = _query.filter_by(id = param.get("case_id")).first()
         
-        if case_data:
-            db.session.delete(case_data)
-            
-            # delete case_project_relation
-            relation_datas = _query_relation.filter_by(case_id = param.get("case_id")).all()
-            for relation_data in relation_datas:            
-                db.session.delete(relation_data)
-            
-            # delete case_requests
-            case_requests_datas = _query_case_requests.filter_by(case_id = param.get("case_id")).all()
-            for case_requests_data in case_requests_datas:            
-                db.session.delete(case_requests_data)
+        case_ids = param.get("ids").split(',')        
+        result = {"delete_result":{}}
+        for case_id in case_ids:
+            case_data = _query.filter_by(id = case_id).first()            
+                    
+            if case_data:
+                db.session.delete(case_data)
                 
-            db.session.commit()
-            status = True
-            message = "delete case success."        
-        else:
-            status = False
-            message = "do not have the case with case_id({})".format(param.get("case_id"))
-        return jsonify(get_result("", status = status,message = message))
+                # delete case_project_relation
+                relation_datas = _query_relation.filter_by(case_id = case_id).all()
+                for relation_data in relation_datas:            
+                    db.session.delete(relation_data)
+                
+                # delete case_requests
+                case_requests_datas = _query_case_requests.filter_by(case_id = case_id).all()
+                for case_requests_data in case_requests_datas:            
+                    db.session.delete(case_requests_data)
+                                
+                db.session.commit()
+                result["delete_result"][case_id] = True                    
+            else:
+                result["delete_result"][case_id] = False
+        
+        status = False if False in result["delete_result"].values() else True        
+        message = "delete case done."    
+        return jsonify(get_result(result, status = status,message = message))
     
     
 if APP_ENV == "production":
