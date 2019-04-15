@@ -40,14 +40,12 @@ def distinct_col():
     # GET /project/get_distinct?col_name=module    
     param = dict(request.args.items())  
     _query = get_query()
-    c_name = param.get("col_name")
-    print(c_name)
+    c_name = param.get("col_name")    
     if not c_name in ("name", "module"):
         return jsonify(get_result("", status = False, message = 'col_name should be in (name, module) for the Project table.'))
     
     lines  = _query.with_entities(getattr(Project, c_name)).distinct().all()
-    result = [{"value": line[0]} for line in lines if line]   
-    print(result) 
+    result = [{"value": line[0]} for line in lines if line]
     return jsonify(get_result(result, message = "get all project {} success.".format(c_name)))
     
 class ProjectView(MethodView):

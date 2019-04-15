@@ -115,7 +115,7 @@ class CaseView(MethodView):
                   
                     
             status = True
-            case_data = _query.filter_by(name = j_param.get("name")).first()
+            case_data = _query.filter_by(name = j_param.get("name")).first()            
             project_data = _query_project.filter_by(name = j_param.get("project_name"), module = j_param.get("project_module")).first()
             
             if case_data:
@@ -124,7 +124,7 @@ class CaseView(MethodView):
             
             elif not project_data:
                 status = False
-                message = "Unknow project named '{0}'.".format(j_param.get("project_name"))
+                message = "Unknow project-module named '{0}-{1}'.".format(j_param.get("project_name"), j_param.get("project_module"))
                             
             else:
                 _case = Case(j_param.get("name"),
