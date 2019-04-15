@@ -68,8 +68,7 @@ class CaseView(MethodView):
         
         result = {"total": total, "cases":[]}
                
-        for _case in pagination.items:
-            print(dir(_case))
+        for _case in pagination.items:            
             case_data = _case.Case
             proj_data = _case.Project
             _case = {

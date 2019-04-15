@@ -70,7 +70,7 @@ def load_user(token):
 @auth.route("/login", methods = ["POST"])
 def login():
     # POST /login
-    j_param = request.json if request.data else {}
+    j_param = request.json if request.data else request.form.to_dict()
     _query = get_query()
     
     try:    
@@ -109,7 +109,7 @@ def login():
 @auth.route("/register", methods = ["POST"])
 def register():
     # POST /register
-    j_param = request.json
+    j_param = request.json if request.data else request.form.to_dict()
     _query = get_query()
     
     try:  
