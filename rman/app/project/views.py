@@ -37,14 +37,16 @@ def get_relation_query():
 
 @project.route("/get_distinct", methods=["GET"])
 def distinct_col():
-    # GET /project/get_distinct?col_name=module    
+    # GET /project/get_distinct?col_name=module&name=xxxx
     param = dict(request.args.items())  
     _query = get_query()
-    c_name = param.get("col_name")    
+    c_name = param.pop("col_name")    
     if not c_name in ("name", "module"):
         return jsonify(get_result("", status = False, message = 'col_name should be in (name, module) for the Project table.'))
     
-    lines  = _query.with_entities(getattr(Project, c_name)).distinct().all()
+    conditions = {i: param.get(i) for i in ('id', 'name', 'module') if param.get(i)}
+    lines  = _query.filter_by(**conditions).with_entities(getattr(Project, c_name)).distinct().all()    
+    
     result = [{"value": line[0]} for line in lines if line]
     return jsonify(get_result(result, message = "get all project {} success.".format(c_name)))
     
