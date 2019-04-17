@@ -22,9 +22,8 @@ from flask import request, jsonify
 from flask_login import login_required
 from flask.views import MethodView
 
-from rman.app.project import project 
 from rman.app.project import project
-from rman.app.project.models import Project, CaseProjectRelation, db
+from rman.app.project.models import Project, TestsetProjectRelation, db
 
 def get_result(result, status=True, message="success" ):
     return {"status":status, "message":message,"result":result}
@@ -33,7 +32,7 @@ def get_query():
     return db.session.query(Project)
 
 def get_relation_query():
-    return db.session.query(CaseProjectRelation)
+    return db.session.query(TestsetProjectRelation)
 
 @project.route("/get_distinct", methods=["GET"])
 def distinct_col():

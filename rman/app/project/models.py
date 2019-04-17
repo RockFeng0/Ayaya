@@ -22,8 +22,8 @@ from rman.app import db
 from sqlalchemy import Column, Integer, String, SmallInteger, DateTime
 
 class Project(db.Model):
-    ''' 测试项目  '''
-    __tablename__ = 'project'
+    ''' 测试项目     关系      Project-- M:M -- TestSet '''
+    __tablename__ = 't_rtsf_project'
         
     id              = Column(Integer, primary_key=True)
     name            = Column(String(64), nullable = False, comment = '项目名称')
@@ -43,21 +43,21 @@ class Project(db.Model):
     def __repr__(self):
         return '<Project %r-%r>' % (self.name,self.id)
     
-class CaseProjectRelation(db.Model):
+class TestsetProjectRelation(db.Model):
     ''' 测试项目  '''
-    __tablename__ = 'case_project_relation'
+    __tablename__ = 't_rtsf_testset_project_relation'
         
     id              = Column(Integer, primary_key=True)
     project_id      = Column(Integer, nullable = False, comment = '项目id')
-    case_id         = Column(Integer, nullable = False, comment = '用例id')    
+    test_set_id         = Column(Integer, nullable = False, comment = '用例集id')    
     create_time     = Column(DateTime, nullable = False)
     update_time     = Column(DateTime, nullable = False)
 
-    def __init__(self, project_id, case_id, create_time,update_time):  
+    def __init__(self, project_id, test_set_id, create_time,update_time):  
         self.project_id  = project_id 
-        self.case_id     = case_id 
+        self.test_set_id = test_set_id 
         self.create_time = create_time
         self.update_time = update_time    
         
     def __repr__(self):
-        return '<CaseProjectRelation %r-%r>' % (self.project_id,self.case_id)
+        return '<TestsetProjectRelation %r-%r>' % (self.project_id,self.test_set_id)

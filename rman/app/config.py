@@ -35,7 +35,7 @@ class Config(object):
     REMEMBER_COOKIE_NAME = "token"
     
     # 蓝图开关
-    ALL_BLUE_PRINT = {"auth":False, "project":True, "case":True, "httptest":True}
+    ALL_BLUE_PRINT = {"auth":False, "project":True, "testset":True, "httpcase":True}
     
     @staticmethod
     def init_app(app):
