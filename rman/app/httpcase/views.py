@@ -34,93 +34,97 @@ def get_result(result, status=True, message="success" ):
 def get_tset_query():
     return db.session.query(TestSet)
 
-def get_tset_requests_query():
+def get_httpcase_query():
     return db.session.query(HttpCase)
         
-def get_requests_join_tset_query():
+def get_hcase_join_tset_query():
     return db.session.query(HttpCase, TestSet).join(TestSet, HttpCase.test_set_id == TestSet.id)    
 
 class HttpCaseView(MethodView):
     
     def get(self):
-        # GET /manager?page=1&size=10&tset_?=?&http_?=?
-        # 获取指定用例所有请求: GET /manager?page=1&size=10&tset_id=1
-        # 获取指定用例所有get请求: GET /manager?page=1&size=10&tset_id=1&http_method=get
+        # GET /manager?page=1&size=10&tset_?=?&hcase_?=?
+        # 获取指定测试集所有接口测试用例: GET /manager?page=1&size=10&tset_id=1
+        # 获取指定测试集所有get请求: GET /manager?page=1&size=10&tset_id=1&hcase_method=get
         
         param = dict(request.args.items())
-        _query_requests_join_case = get_requests_join_tset_query()
+        _query_hcase_join_tset = get_hcase_join_tset_query()
         
         tset_conditions = {getattr(TestSet,i) == param.get("tset_%s" %i) for i in ('id', 'name', 'responsible', 'tester', 'type') if param.get("tset_%s" %i)}
-        http_conditions = {getattr(HttpCase, i) == param.get("http_%s" %i) for i in ('id', 'url', 'method') if param.get("http_%s" %i)}
+        http_conditions = {getattr(HttpCase, i) == param.get("hcase_%s" %i) for i in ('id', 'url', 'method') if param.get("hcase_%s" %i)}
         conditions = tset_conditions.union(http_conditions)                
-        base_conditions = _query_requests_join_case.filter(*conditions).order_by(TestSet.update_time.desc())
+        base_conditions = _query_hcase_join_tset.filter(*conditions).order_by(TestSet.update_time.desc())
                 
         page = int(param.get("page", 1))
         size = int(param.get("size", 10))        
         total = base_conditions.count()
         pagination = base_conditions.paginate(page = page, per_page= size, error_out=False)
         
-        result = {"total": total, "tset_requests":[]}
-        for case in pagination.items:
-            tset_data = case.Case
-            tset_req_data = case.HttpCase           
+        result = {"total": total, "httpcases":[]}
+        for pg in pagination.items:
+            tset_data = pg.TestSet
+            hcase_data = pg.HttpCase           
             _case = {
-                "basic": {
+                "testset": {
                     "id":tset_data.id,
                     "name": tset_data.name, 
                     "desc":tset_data.desc, 
                     "responsible": tset_data.responsible,
                     "tester": tset_data.tester,
                     "type": tset_data.type,
-                    "func": tset_data.func,
+                    "suite_def": tset_data.suite_def,
                     },
-                "http": {
-                    "glob_var": tset_req_data.glob_var,
-                    "glob_regx": tset_req_data.glob_regx,
-                    "pre_command":tset_req_data.pre_command,
-                    "url":tset_req_data.url,
-                    "method":tset_req_data.method,
-                    "hearders":tset_req_data.hearders,
-                    "body":tset_req_data.body,
-                    "post_command":tset_req_data.post_command,
-                    "verify":tset_req_data.verify,
+                "httpcase": {
+                    "name":"",
+                    "suite_name":"",
+                    "api_name":"",                    
+                    "func":"",
+                    "glob_var": hcase_data.glob_var,
+                    "glob_regx": hcase_data.glob_regx,
+                    "pre_command":hcase_data.pre_command,
+                    "url":hcase_data.url,
+                    "method":hcase_data.method,
+                    "hearders":hcase_data.hearders,
+                    "body":hcase_data.body,
+                    "post_command":hcase_data.post_command,
+                    "verify":hcase_data.verify,
                     }, 
-                "c_time": tset_req_data.create_time.strftime("%Y-%m-%d %H:%M:%S"),
-                "u_time": tset_req_data.update_time.strftime("%Y-%m-%d %H:%M:%S")
+                "c_time": hcase_data.create_time.strftime("%Y-%m-%d %H:%M:%S"),
+                "u_time": hcase_data.update_time.strftime("%Y-%m-%d %H:%M:%S")
             }
-            result["tset_requests"].append(_case)
+            result["httpcases"].append(_case)
         
-        return jsonify(get_result(result, message = "get all cases_requests success in page: {0} size: {1}.".format(page, size)))
+        return jsonify(get_result(result, message = "Query all data  success in page: {0} size: {1}.".format(page, size)))
     
     
     def post(self):
         # POST /manager?tset_id=1
         param = dict(request.args.items()) 
         j_param = request.json if request.data else request.form.to_dict()
-        _query = get_tset_requests_query()
-        _query_case = get_tset_query()       
+        _query = get_httpcase_query()
+        _query_tset = get_tset_query()       
         now = datetime.datetime.now()
         
         tset_id = param.get("tset_id")
-        tset_data = _query_case.filter_by(id = tset_id).first()
+        tset_data = _query_tset.filter_by(id = tset_id).first()
                     
         try:
             
             for param in ("url", "method"):
                 _param = j_param.get(param)
                 if not _param:
-                    return jsonify(get_result("", status = False, message = 'HttpCase parameter [{0}] should not be null.'.format(param)))
+                    return jsonify(get_result("", status = False, message = 'Parameter [{0}] should not be null.'.format(param)))
                                                     
             status = True            
             if not tset_data:
                 status = False
-                message = "Not found the case with id: {0}".format(tset_id)
+                message = "Not found the testset with id: {0}".format(tset_id)
                             
 #             elif _query.filter_by(tset_id = tset_data.id).first():
 #                 status = False
 #                 message = "The requests of this tset_id[{0}]  already exists.".format(tset_data.id)
             else:
-                _tset_requests = HttpCase(j_param.get("glob_var", '{}'),
+                _httpcase = HttpCase(j_param.get("glob_var", '{}'),
                     j_param.get("glob_regx",'{}'), 
                     j_param.get("pre_command",'[]'),
                     j_param.get("url"),
@@ -130,10 +134,10 @@ class HttpCaseView(MethodView):
                     j_param.get("post_command",'[]'),
                     j_param.get("verify",'[]'),
                     tset_data.id,now, now)
-                db.session.add(_tset_requests)
+                db.session.add(_httpcase)
                 db.session.commit()
                                                
-                message = "add tset_requests success."
+                message = "add success."
                 db.session.flush()
                 db.session.commit()
         except Exception as e:
@@ -145,21 +149,21 @@ class HttpCaseView(MethodView):
         # PUT /manager?id=32342
         param = dict(request.args.items())
         j_param = request.json if request.data else request.form.to_dict()
-        _query = get_tset_requests_query()                
+        _query = get_httpcase_query()                
         now = datetime.datetime.now()
         
         try: 
-            tset_requests_data = _query.filter_by(id = param.get("id")).first()
+            httpcase_data = _query.filter_by(id = param.get("id")).first()
             
-            if not tset_requests_data:
-                message = "do not have the tset_requests with id({})".format(param.get("id"))
+            if not httpcase_data:
+                message = "do not have the httpcase with id({})".format(param.get("id"))
                 return jsonify(get_result("", status = False, message = message))
             
-            _ = [setattr(tset_requests_data, i, j_param.get(i)) for i in ["url","method","glob_var", "glob_regx", "hearders", "body", "pre_command", "post_command", "verify"] if j_param.get(i)]                
-            tset_requests_data.update_time = now
+            _ = [setattr(httpcase_data, i, j_param.get(i)) for i in ["url","method","glob_var", "glob_regx", "hearders", "body", "pre_command", "post_command", "verify"] if j_param.get(i)]                
+            httpcase_data.update_time = now
                                     
             status = True
-            message = "update tset_requests success."
+            message = "update success."
             db.session.flush()
             db.session.commit()            
         except Exception as e:
@@ -171,17 +175,17 @@ class HttpCaseView(MethodView):
     def delete(self):
         # DELETE /manager?id=32342
         param = dict(request.args.items())
-        _query = get_tset_requests_query()        
-        tset_requests_data = _query.filter_by(id = param.get("id")).first()
+        _query = get_httpcase_query()        
+        httpcase_data = _query.filter_by(id = param.get("id")).first()
         
-        if tset_requests_data:
-            db.session.delete(tset_requests_data)                            
+        if httpcase_data:
+            db.session.delete(httpcase_data)                            
             db.session.commit()
             status = True
-            message = "delete tset_requests success."        
+            message = "delete success."        
         else:
             status = False
-            message = "do not have the tset_requests with id({})".format(param.get("id"))
+            message = "do not have the httpcase with id({})".format(param.get("id"))
         return jsonify(get_result("", status = status,message = message))
 
 
@@ -197,9 +201,9 @@ class CaseRecordView(MethodView):
         pass
 
 if APP_ENV == "production":
-    _tset_requests_view_manager = login_required(HttpCaseView.as_view('tset_requests_view_manager'))
+    _httpcase_view_manager = login_required(HttpCaseView.as_view('httpcase_view_manager'))
 else:
-    _tset_requests_view_manager = HttpCaseView.as_view('tset_requests_view_manager')  
+    _httpcase_view_manager = HttpCaseView.as_view('httpcase_view_manager')  
 
-httpcase.add_url_rule('/manager', view_func=_tset_requests_view_manager)
+httpcase.add_url_rule('/manager', view_func=_httpcase_view_manager)
     

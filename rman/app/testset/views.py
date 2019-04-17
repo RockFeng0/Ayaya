@@ -49,11 +49,11 @@ def get_tset_join_project_query():
 def get_httpcase_query():
     return db.session.query(HttpCase)
 
-class CaseView(MethodView):
+class TestSetView(MethodView):
     
     def get(self):
         # GET /manager?page=1&size=10&tset_?=?&proj_?=?
-        # 获取指定项目下的所有case: GET /manager?page=1&size=10&proj_id=1
+        # 获取指定项目下的所有testset: GET /manager?page=1&size=10&proj_id=1
         # 获取所有 api: GET /manager?page=1&size=10&tset_type=api
         # 获取所有 suite: GET /manager?page=1&size=10&tset_type=suite
         param = dict(request.args.items())
@@ -71,26 +71,26 @@ class CaseView(MethodView):
         
         result = {"total": total, "testsets":[]}
                
-        for _case in pagination.items:            
-            tset_data = _case.Case
-            proj_data = _case.Project
-            _case = {
+        for pg in pagination.items:            
+            tset_data = pg.TestSet
+            proj_data = pg.Project
+            _tset = {
                 "id":tset_data.id,
                 "name": tset_data.name, 
                 "desc":tset_data.desc, 
                 "responsible": tset_data.responsible,
                 "tester": tset_data.tester,
                 "type": tset_data.type,
-                "func": tset_data.func,
+                "suite_def": tset_data.suite_def,
                 "project_name": proj_data.name,
                 "project_module": proj_data.module,
                    
                 "c_time": tset_data.create_time.strftime("%Y-%m-%d %H:%M:%S"),
                 "u_time": tset_data.update_time.strftime("%Y-%m-%d %H:%M:%S")
             }
-            result["testsets"].append(_case)
+            result["testsets"].append(_tset)
         
-        return jsonify(get_result(result, message = "get all testsets success in page: {0} size: {1}.".format(page, size)))
+        return jsonify(get_result(result, message = "Query all data success in page: {0} size: {1}.".format(page, size)))
     
     def post(self):
         # POST /manager        
@@ -104,30 +104,27 @@ class CaseView(MethodView):
             for param in ("name", "type", "project_name", "project_module"):
                 _param = j_param.get(param)
                 if not _param:
-                    return jsonify(get_result("", status = False, message = 'Case parameter [{0}] should not be null.'.format(param)))
+                    return jsonify(get_result("", status = False, message = 'Parameter [{0}] should not be null.'.format(param)))
                 
                 if param == 'type':
                     if not _param.lower() in ('api', 'suite', 'case'):
-                        return jsonify(get_result("", status = False, message = 'Case type should be in (api, suite, case).'))
+                        return jsonify(get_result("", status = False, message = 'Parameter [type] should be in (api, suite, case).'))
                     
-                    if _param == 'case' and j_param.get('func'):
-                        return jsonify(get_result("", status = False, message = 'Invaild case with a function name.'))                    
-                    
-                    if (_param == 'api' or _param == 'suite') and not j_param.get('func'):
-                        return jsonify(get_result("", status = False, message = 'Invaild api case or suite case. Do not have relation function.'))
+                    if _param == 'suite' and not j_param.get('suite_def'):
+                        return jsonify(get_result("", status = False, message = "Not found parameter 'suite_def'"))
                   
                     
             status = True
-            tset_data = _query.filter_by(name = j_param.get("name")).first()            
+            tset_data = _query.filter_by(name = j_param.get("name")).first()
             project_data = _query_project.filter_by(name = j_param.get("project_name"), module = j_param.get("project_module")).first()
             
             if tset_data:
                 status = False
-                message = "this case is already exists."
+                message = "'%s' already exists." %j_param.get("name")
             
             elif not project_data:
                 status = False
-                message = "Unknow project-module named '{0}-{1}'.".format(j_param.get("project_name"), j_param.get("project_module"))
+                message = "Unknow project[{0}] with module[{1}]".format(j_param.get("project_name"), j_param.get("project_module"))
                             
             else:
                 _testset = TestSet(j_param.get("name"),
@@ -135,7 +132,7 @@ class CaseView(MethodView):
                      j_param.get("responsible",'administrator'),
                      j_param.get("tester",'administrator'),
                      j_param.get("type"),
-                     j_param.get("func"),
+                     j_param.get("suite_def"),
                      now, now)                
                 db.session.add(_testset)
                 db.session.commit()
@@ -143,7 +140,7 @@ class CaseView(MethodView):
                 _tset_relation = TestsetProjectRelation(project_data.id, _testset.id, now, now)
                 db.session.add(_tset_relation) 
                                
-                message = "add testset success."
+                message = "add success."
                 db.session.flush()
                 db.session.commit()
         except Exception as e:
@@ -165,27 +162,19 @@ class CaseView(MethodView):
                 message = "do not have the testset with tset_id({})".format(param.get("tset_id"))
                 return jsonify(get_result("", status = False, message = message))
             
-            for pp in ("name", "type"):
-                _param = j_param.get(pp)
-                if not _param:
-                    return jsonify(get_result("", status = False, message = 'Case parameter [{0}] should not be null.'.format(pp)))
-                
-                if pp == 'type':
-                    if not _param.lower() in ('api', 'suite', 'case'):
-                        return jsonify(get_result("", status = False, message = 'Case type should be in (api, suite, case).'))
-                    
-                    if _param == 'case' and j_param.get('func'):
-                        return jsonify(get_result("", status = False, message = 'Invaild case with a function name.'))
-                    
-                    if (_param == 'api' or _param == 'suite') and not j_param.get('func'):
-                        return jsonify(get_result("", status = False, message = 'Invaild api case or suite case. Do not have relation function.'))
-                
-            for i in ["name", "desc", "responsible", "tester", "type", "func"]:
-                setattr(tset_data, i, j_param.get(i,""))            
+            if 'type' in j_param:
+                _param = j_param.get('type')
+                if not _param.lower() in ('api', 'suite', 'case'):
+                    return jsonify(get_result("", status = False, message = 'Parameter [type] should be in (api, suite, case).'))
+                                    
+                if _param == 'suite' and not j_param.get('suite_def'):
+                    return jsonify(get_result("", status = False, message = "Parameter [suite_def] should not be null."))                  
+                            
+            _ = [setattr(tset_data, i, j_param.get(i,"")) for i in ["name", "desc", "responsible", "tester", "type", "suite_def"] if j_param.get(i)]                             
             tset_data.update_time = now
                                     
             status = True
-            message = "update case success."
+            message = "update success."
             db.session.flush()
             db.session.commit()            
         except Exception as e:
@@ -199,41 +188,46 @@ class CaseView(MethodView):
         param = dict(request.args.items())
         _query = get_tset_query()
         _query_relation = get_relation_query()
-        _query_tset_requests = get_httpcase_query()
+        _query_httpcase = get_httpcase_query()
         
-        
-        tset_ids = param.get("ids").split(',')        
-        result = {"delete_result":{}}
-        for tset_id in tset_ids:
-            tset_data = _query.filter_by(id = tset_id).first()            
+        try:
+            tset_ids = param.get("ids").split(',')        
+            result = {"delete_result":{}}
+            for tset_id in tset_ids:
+                tset_data = _query.filter_by(id = tset_id).first()            
+                        
+                if tset_data:
+                    db.session.delete(tset_data)
                     
-            if tset_data:
-                db.session.delete(tset_data)
-                
-                # delete tset_project_relation
-                relation_datas = _query_relation.filter_by(tset_id = tset_id).all()
-                for relation_data in relation_datas:            
-                    db.session.delete(relation_data)
-                
-                # delete tset_requests
-                tset_requests_datas = _query_tset_requests.filter_by(tset_id = tset_id).all()
-                for tset_requests_data in tset_requests_datas:            
-                    db.session.delete(tset_requests_data)
-                                
-                db.session.commit()
-                result["delete_result"][tset_id] = True                    
-            else:
-                result["delete_result"][tset_id] = False
-        
-        status = False if False in result["delete_result"].values() else True        
-        message = "delete case done."    
+                    # delete tset_project_relation
+                    relation_datas = _query_relation.filter_by(test_set_id = tset_id).all()
+                    for relation_data in relation_datas:            
+                        db.session.delete(relation_data)
+                    
+                    # delete tset_requests
+                    httpcases = _query_httpcase.filter_by(test_set_id = tset_id).all()
+                    for _httpcase in httpcases:            
+                        db.session.delete(_httpcase)
+                                    
+                    db.session.commit()
+                    result["delete_result"][tset_id] = True                    
+                else:
+                    result["delete_result"][tset_id] = False
+            
+            status = False if False in result["delete_result"].values() else True        
+            message = "delete success."    
+        except Exception as e:
+            result = ''
+            message = str(e)
+            status = False
+            
         return jsonify(get_result(result, status = status,message = message))
     
     
 if APP_ENV == "production":
-    _tset_view_manager = login_required(CaseView.as_view('tset_view_manager'))    
+    _tset_view_manager = login_required(TestSetView.as_view('tset_view_manager'))    
 else:
-    _tset_view_manager = CaseView.as_view('tset_view_manager')      
+    _tset_view_manager = TestSetView.as_view('tset_view_manager')      
 
 testset.add_url_rule('/manager', view_func=_tset_view_manager)
 

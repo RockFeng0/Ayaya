@@ -41,7 +41,7 @@ def distinct_col():
     _query = get_query()
     c_name = param.pop("col_name")    
     if not c_name in ("name", "module"):
-        return jsonify(get_result("", status = False, message = 'col_name should be in (name, module) for the Project table.'))
+        return jsonify(get_result("", status = False, message = "'col_name' should be in (name, module) for the Project table."))
     
     conditions = {i: param.get(i) for i in ('id', 'name', 'module') if param.get(i)}
     lines  = _query.filter_by(**conditions).with_entities(getattr(Project, c_name)).distinct().all()    
@@ -73,7 +73,7 @@ class ProjectView(MethodView):
                            "u_time": pj.update_time.strftime("%Y-%m-%d %H:%M:%S")
                            } for pj in pagination.items]
         
-        return jsonify(get_result(result, message = "get all projects success in page: {0} size: {1}.".format(page, size)))
+        return jsonify(get_result(result, message = "Query all data success in page: {0} size: {1}.".format(page, size)))
         
     
     def post(self):
@@ -85,18 +85,18 @@ class ProjectView(MethodView):
         try:
             for param in ("name", "module"):
                 if not j_param.get(param):
-                    return jsonify(get_result("", status = False, message = 'project {0} should not be null.'.format(param)))
+                    return jsonify(get_result("", status = False, message = 'Parameter [{0}] should not be null.'.format(param)))
                     
             status = True
             project_data = _query.filter_by(name = j_param.get("name"), module = j_param.get("module")).first()
              
             if project_data:
                 status = False
-                message = "this project is already exists."                
+                message = "'{0}-{1}' already exists.".format(j_param.get("name"), j_param.get("module"))            
             else:
                 project_data = Project(j_param.get("name"), j_param.get("module"), j_param.get("comment"),now,now)
                 db.session.add(project_data)
-                message = "add project success."
+                message = "add success."
                 db.session.flush()
                 db.session.commit()
         except Exception as e:
@@ -118,17 +118,12 @@ class ProjectView(MethodView):
             if not project_data:
                 message = "do not have the project with proj_id({})".format(param.get("proj_id"))
                 return jsonify(get_result("", status = False, message = message))
-            
-            for param in ("name", "module"):
-                if not j_param.get(param):
-                    return jsonify(get_result("", status = False, message = 'project parameter [{0}] should not be null.'.format(param)))
-                
-            for i in ["name", "module", "comment"]:
-                setattr(project_data, i, j_param.get(i,""))
+                        
+            _ = [setattr(project_data, i, j_param.get(i,"")) for i in ["name", "module", "comment"] if j_param.get(i)]                             
             project_data.update_time = now
             
             status = True
-            message = "update project success."
+            message = "update success."
             db.session.flush()
             db.session.commit()    
             
@@ -145,29 +140,33 @@ class ProjectView(MethodView):
         _query = get_query()
         _query_relation = get_relation_query() 
         
-        proj_ids = param.get("ids").split(',')        
-        result = {"delete_result":{}}
-        for proj_id in proj_ids:
-            project_data = _query.filter_by(id = proj_id).first()
+        try:
+            proj_ids = param.get("ids").split(',')        
+            result = {"delete_result":{}}
+            for proj_id in proj_ids:
+                project_data = _query.filter_by(id = proj_id).first()
+                        
+                if project_data:
+                    db.session.delete(project_data)
                     
-            if project_data:
-                db.session.delete(project_data)
-                
-                relation_datas = _query_relation.filter_by(project_id = proj_id).all()
-                
-                for relation_data in relation_datas:
-                    db.session.delete(relation_data)
-                                
-                db.session.commit()
-                result["delete_result"][proj_id] = True                    
-            else:
-                result["delete_result"][proj_id] = False
-        
-        status = False if False in result["delete_result"].values() else True        
-        message = "delete project done."    
+                    relation_datas = _query_relation.filter_by(project_id = proj_id).all()
+                    
+                    for relation_data in relation_datas:
+                        db.session.delete(relation_data)
+                                    
+                    db.session.commit()
+                    result["delete_result"][proj_id] = True                    
+                else:
+                    result["delete_result"][proj_id] = False
+            
+            status = False if False in result["delete_result"].values() else True        
+            message = "delete done."
+        except Exception as e:
+            result = ''
+            message = str(e)
+            status = False
         
         return jsonify(get_result(result, status = status,message = message))
-
 
 
 # _project_view_manager = login_required(ProjectView.as_view('project_view_manager'))
