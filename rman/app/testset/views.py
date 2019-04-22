@@ -49,6 +49,17 @@ def get_tset_join_project_query():
 def get_httpcase_query():
     return db.session.query(HttpCase)
 
+@testset.route("/get_distinct", methods=["GET"])
+def distinct_col():
+    # GET /testset/get_distinct?tester=xxxx    
+    param = dict(request.args.items())  
+    _query = get_tset_query()    
+    conditions = {i: param.get(i) for i in ('name', 'responsible', 'tester', 'type') if param.get(i)}    
+    lines  = _query.filter_by(**conditions).with_entities(TestSet.name, TestSet.responsible, TestSet.tester, TestSet.type).distinct().all()   
+    
+    result = [{"name": line[0], "responsible": line[1], "tester": line[2], "type": line[3],} for line in lines if line]
+    return jsonify(get_result(result, message = "get all distinct data success."))
+
 class TestSetView(MethodView):
     
     def get(self):
