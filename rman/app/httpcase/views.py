@@ -19,6 +19,7 @@ Provide a function for the automation test
 '''
 
 import datetime, json
+from functools import partial
 from flask import request, jsonify
 from flask_login import login_required
 from flask.views import MethodView
@@ -51,7 +52,7 @@ class HttpCaseView(MethodView):
         _query_hcase_join_tset = get_hcase_join_tset_query()
         
         tset_conditions = {getattr(TestSet,i) == param.get("tset_%s" %i) for i in ('id', 'name', 'responsible', 'tester', 'type') if param.get("tset_%s" %i)}
-        http_conditions = {getattr(HttpCase, i) == param.get("hcase_%s" %i) for i in ('id', 'url', 'method') if param.get("hcase_%s" %i)}
+        http_conditions = {getattr(HttpCase, i) == param.get("hcase_%s" %i) for i in ('id', 'name', 'url', 'method', 'api_name', 'suite_name') if param.get("hcase_%s" %i)}
         conditions = tset_conditions.union(http_conditions)                
         base_conditions = _query_hcase_join_tset.filter(*conditions).order_by(TestSet.update_time.desc())
                 
@@ -84,7 +85,7 @@ class HttpCaseView(MethodView):
                     "pre_command":hcase_data.pre_command,
                     "url":hcase_data.url,
                     "method":hcase_data.method,
-                    "hearders":hcase_data.hearders,
+                    "headers":hcase_data.headers,
                     "body":hcase_data.body,
                     "post_command":hcase_data.post_command,
                     "verify":hcase_data.verify,
@@ -107,7 +108,7 @@ class HttpCaseView(MethodView):
         
         tset_id = param.get("tset_id")
         tset_data = _query_tset.filter_by(id = tset_id).first()
-                    
+        
         try:
             
             for param in ("url", "method"):
@@ -124,16 +125,19 @@ class HttpCaseView(MethodView):
 #                 status = False
 #                 message = "The requests of this tset_id[{0}]  already exists.".format(tset_data.id)
             else:
-                _httpcase = HttpCase(j_param.get("glob_var", '{}'),
-                    j_param.get("glob_regx",'{}'), 
-                    j_param.get("pre_command",'[]'),
-                    j_param.get("url"),
-                    j_param.get("method"),
-                    j_param.get("hearders", '{}'),
-                    j_param.get("body", '{}'),
-                    j_param.get("post_command",'[]'),
-                    j_param.get("verify",'[]'),
-                    tset_data.id,now, now)
+                # string:  url, method
+                # list:    pre_command, verify, post_command
+                # dict:    glob_var, glob_regx, headers, body
+                args = []                
+                for i in ("glob_var", "glob_regx", "pre_command", "url", "method", "headers", "body", "post_command", "verify"):
+                    print("%s:  %s" %(i, j_param.get(i)))                   
+                    if i in ("url", "method"):
+                        args.append(j_param.get(i,""))
+                    else:
+                        args.append(json.dumps(j_param.get(i)))                    
+                args.extend((tset_data.id,now, now))
+                _httpcase = HttpCase(*args)
+                
                 db.session.add(_httpcase)
                 db.session.commit()
                                                
@@ -159,7 +163,7 @@ class HttpCaseView(MethodView):
                 message = "do not have the httpcase with id({})".format(param.get("id"))
                 return jsonify(get_result("", status = False, message = message))
             
-            _ = [setattr(httpcase_data, i, j_param.get(i)) for i in ["url","method","glob_var", "glob_regx", "hearders", "body", "pre_command", "post_command", "verify"] if j_param.get(i)]                
+            _ = [setattr(httpcase_data, i, j_param.get(i)) for i in ["url","method","glob_var", "glob_regx", "headers", "body", "pre_command", "post_command", "verify"] if j_param.get(i)]                
             httpcase_data.update_time = now
                                     
             status = True

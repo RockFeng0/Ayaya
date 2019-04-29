@@ -40,7 +40,7 @@ class HttpCase(db.Model):
     pre_command     = Column(String(512), comment = '测试用例前置条件(list)')
     url             = Column(String(512), nullable = False, comment = '请求url')
     method          = Column(String(4), nullable = False, comment = '请求方法(get or post)')
-    hearders        = Column(String(1024), comment = '请求头(dict)')
+    headers        = Column(String(1024), comment = '请求头(dict)')
     body            = Column(String(1024), comment = '请求体(dict or str)')
     post_command    = Column(String(512), comment = '测试用例后置条件(list)')
     verify          = Column(String(512), comment = '验证条件(list)')
@@ -49,13 +49,13 @@ class HttpCase(db.Model):
     create_time     = Column(DateTime, nullable = False)
     update_time     = Column(DateTime, nullable = False)
 
-    def __init__(self, glob_var, glob_regx,pre_command,url,method,hearders,body,post_command,verify,test_set_id,create_time,update_time):
+    def __init__(self, glob_var, glob_regx,pre_command,url,method,headers,body,post_command,verify,test_set_id,create_time,update_time):
         self.glob_var       = glob_var       
         self.glob_regx      = glob_regx
         self.pre_command    = pre_command
         self.url            = url
         self.method         = method
-        self.hearders       = hearders
+        self.headers       = headers
         self.body           = body
         self.post_command   = post_command
         self.verify         = verify

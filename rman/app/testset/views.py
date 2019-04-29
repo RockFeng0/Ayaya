@@ -55,9 +55,9 @@ def distinct_col():
     param = dict(request.args.items())  
     _query = get_tset_query()    
     conditions = {i: param.get(i) for i in ('name', 'responsible', 'tester', 'type') if param.get(i)}    
-    lines  = _query.filter_by(**conditions).with_entities(TestSet.name, TestSet.responsible, TestSet.tester, TestSet.type).distinct().all()   
+    lines  = _query.filter_by(**conditions).with_entities(TestSet.id, TestSet.name, TestSet.responsible, TestSet.tester, TestSet.type).distinct().all()   
     
-    result = [{"name": line[0], "responsible": line[1], "tester": line[2], "type": line[3],} for line in lines if line]
+    result = [{"id": line[0], "name": line[1], "responsible": line[2], "tester": line[3], "type": line[4]} for line in lines if line]
     return jsonify(get_result(result, message = "get all distinct data success."))
 
 class TestSetView(MethodView):
