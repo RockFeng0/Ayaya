@@ -49,17 +49,22 @@ class HttpCase(db.Model):
     create_time     = Column(DateTime, nullable = False)
     update_time     = Column(DateTime, nullable = False)
 
-    def __init__(self, glob_var, glob_regx,pre_command,url,method,headers,body,post_command,verify,test_set_id,create_time,update_time):
+    def __init__(self, name, suite_name, api_name, func, url,method,glob_var, glob_regx,headers,body,pre_command, post_command,verify,test_set_id,create_time,update_time):
+        self.name           = name 
+        self.suite_name     = suite_name 
+        self.api_name       = api_name 
+        self.func           = func 
+        #### manunal
         self.glob_var       = glob_var       
         self.glob_regx      = glob_regx
         self.pre_command    = pre_command
         self.url            = url
         self.method         = method
-        self.headers       = headers
+        self.headers        = headers
         self.body           = body
         self.post_command   = post_command
         self.verify         = verify
-        self.test_set_id        = test_set_id 
+        self.test_set_id    = test_set_id 
         self.create_time    = create_time
         self.update_time    = update_time
           

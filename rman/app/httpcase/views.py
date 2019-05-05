@@ -99,7 +99,7 @@ class HttpCaseView(MethodView):
     
     
     def post(self):
-        # POST /manager?tset_id=1
+        # POST /manager?tset_id=1case_mode=?   call_api or call_suite or manunal
         param = dict(request.args.items()) 
         j_param = request.json if request.data else request.form.to_dict()
         _query = get_httpcase_query()
@@ -107,34 +107,33 @@ class HttpCaseView(MethodView):
         now = datetime.datetime.now()
         
         tset_id = param.get("tset_id")
+        case_mode = param.get("case_mode")
         tset_data = _query_tset.filter_by(id = tset_id).first()
         
         try:
-            
-            for param in ("url", "method"):
-                _param = j_param.get(param)
-                if not _param:
-                    return jsonify(get_result("", status = False, message = 'Parameter [{0}] should not be null.'.format(param)))
-                                                    
+            if case_mode == "manunal":
+                for param in ("url", "method"):
+                    _param = j_param.get(param)
+                    if not _param:
+                        return jsonify(get_result("", status = False, message = 'Parameter [{0}] should not be null.'.format(param)))
+                        
             status = True            
             if not tset_data:
                 status = False
                 message = "Not found the testset with id: {0}".format(tset_id)
                             
-#             elif _query.filter_by(tset_id = tset_data.id).first():
-#                 status = False
-#                 message = "The requests of this tset_id[{0}]  already exists.".format(tset_data.id)
             else:
-                # string:  url, method
-                # list:    pre_command, verify, post_command
+                # string:  name, suite_name, api_name, func,url, method
                 # dict:    glob_var, glob_regx, headers, body
-                args = []                
-                for i in ("glob_var", "glob_regx", "pre_command", "url", "method", "headers", "body", "post_command", "verify"):
-                    print("%s:  %s" %(i, j_param.get(i)))                   
-                    if i in ("url", "method"):
-                        args.append(j_param.get(i,""))
-                    else:
-                        args.append(json.dumps(j_param.get(i)))                    
+                # list:    pre_command, post_command, verify                
+                
+                args = []
+                for k,v in j_param.items():
+                    print(k,v)
+                _ = [args.append(j_param.get(i,"")) for i in ("name", "suite_name", "api_name", "func","url", "method")]
+                _ = [args.append(json.dumps(j_param.get(i, {}))) for i in ("glob_var", "glob_regx", "headers", "body")]   
+                _ = [args.append(json.dumps(j_param.get(i, []))) for i in ("pre_command", "post_command", "verify")]  
+                              
                 args.extend((tset_data.id,now, now))
                 _httpcase = HttpCase(*args)
                 
