@@ -19,7 +19,6 @@ Provide a function for the automation test
 '''
 
 import datetime, json
-from functools import partial
 from flask import request, jsonify
 from flask_login import login_required
 from flask.views import MethodView
@@ -47,7 +46,7 @@ class HttpCaseView(MethodView):
         # GET /manager?page=1&size=10&tset_?=?&hcase_?=?
         # 获取指定测试集所有接口测试用例: GET /manager?page=1&size=10&tset_id=1
         # 获取指定测试集所有get请求: GET /manager?page=1&size=10&tset_id=1&hcase_method=get
-        
+        print("!!!!")
         param = dict(request.args.items())
         _query_hcase_join_tset = get_hcase_join_tset_query()
         
@@ -64,7 +63,8 @@ class HttpCaseView(MethodView):
         result = {"total": total, "httpcases":[]}
         for pg in pagination.items:
             tset_data = pg.TestSet
-            hcase_data = pg.HttpCase           
+            hcase_data = pg.HttpCase 
+                     
             _case = {
                 "testset": {
                     "id":tset_data.id,
@@ -76,7 +76,9 @@ class HttpCaseView(MethodView):
                     "suite_def": tset_data.suite_def,
                     },
                 "httpcase": {
+                    "id":hcase_data.id,
                     "name":hcase_data.name,
+                    "case_mode":hcase_data.case_mode,
                     "suite_name":hcase_data.suite_name,
                     "api_name":hcase_data.api_name,
                     "func":hcase_data.func,
@@ -127,10 +129,10 @@ class HttpCaseView(MethodView):
                 # dict:    glob_var, glob_regx, headers, body
                 # list:    pre_command, post_command, verify                
                 
-                args = []
+                args = []                
                 for k,v in j_param.items():
                     print(k,v)
-                _ = [args.append(j_param.get(i,"")) for i in ("name", "suite_name", "api_name", "func","url", "method")]
+                _ = [args.append(j_param.get(i,"")) for i in ("name", "suite_name", "api_name", "func","url", "method", "case_mode")]
                 _ = [args.append(json.dumps(j_param.get(i, {}))) for i in ("glob_var", "glob_regx", "headers", "body")]   
                 _ = [args.append(json.dumps(j_param.get(i, []))) for i in ("pre_command", "post_command", "verify")]  
                               
@@ -155,41 +157,58 @@ class HttpCaseView(MethodView):
         _query = get_httpcase_query()                
         now = datetime.datetime.now()
         
-        try: 
+        try:
+             
             httpcase_data = _query.filter_by(id = param.get("id")).first()
             
             if not httpcase_data:
                 message = "do not have the httpcase with id({})".format(param.get("id"))
                 return jsonify(get_result("", status = False, message = message))
+                        
+            _ = [setattr(httpcase_data, i, j_param.get(i)) for i in ("name", "suite_name", "api_name", "func","url", "method", "case_mode") if hasattr(httpcase_data, i) and j_param.get(i)]
+            _ = [setattr(httpcase_data, i, json.dumps(j_param.get(i))) for i in("glob_var", "glob_regx", "headers", "body", "pre_command", "post_command", "verify") if hasattr(httpcase_data, i) and j_param.get(i)]            
+#             _ = [setattr(httpcase_data, i, json.dumps(j_param.get(i))) for i in j_param.keys() if hasattr(httpcase_data, i) and j_param.get(i)]
             
-            _ = [setattr(httpcase_data, i, j_param.get(i)) for i in ["url","method","glob_var", "glob_regx", "headers", "body", "pre_command", "post_command", "verify"] if j_param.get(i)]                
             httpcase_data.update_time = now
                                     
             status = True
             message = "update success."
             db.session.flush()
-            db.session.commit()            
+            db.session.commit()   
+            print(5)           
         except Exception as e:
             message = str(e)
             status = False
-    
+        print(6)  
         return jsonify(get_result("", status = status, message = message))       
     
     def delete(self):
-        # DELETE /manager?id=32342
-        param = dict(request.args.items())
-        _query = get_httpcase_query()        
-        httpcase_data = _query.filter_by(id = param.get("id")).first()
+        # DELETE /manager?ids='1,2,3,4,5'
+        param = dict(request.args.items())     
         
-        if httpcase_data:
-            db.session.delete(httpcase_data)                            
-            db.session.commit()
-            status = True
-            message = "delete success."        
-        else:
+        _query = get_httpcase_query()
+        
+        try:
+            hcase_ids = param.get("ids").split(',')        
+            result = {"delete_result":{}}
+            for hcase_id in hcase_ids:
+                httpcase_data = _query.filter_by(id = hcase_id).first()
+                        
+                if httpcase_data:
+                    db.session.delete(httpcase_data)
+                    db.session.commit()
+                    result["delete_result"][hcase_id] = True                    
+                else:
+                    result["delete_result"][hcase_id] = False
+            
+            status = False if False in result["delete_result"].values() else True        
+            message = "delete done."
+        except Exception as e:
+            result = ''
+            message = str(e)
             status = False
-            message = "do not have the httpcase with id({})".format(param.get("id"))
-        return jsonify(get_result("", status = status,message = message))
+        
+        return jsonify(get_result(result, status = status,message = message))
 
 
 class CaseRecordView(MethodView):

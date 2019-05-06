@@ -22,38 +22,51 @@ from rman.app import db
 from sqlalchemy import Column, Integer, String, SmallInteger, DateTime, Date, Time
     
 class HttpCase(db.Model):
-    ''' http reqeusts case   '''
+    ''' http reqeusts case   
+    @note:  normal case --> name & case_mode(api_name or suite_name or manunal)
+    @note:  suite case --> name & api_name
+    @note:  api case --> manunal & func
+    '''
 
     __tablename__ = 't_rtsf_httpcase'
         
-    id              = Column(Integer, primary_key=True)    
-    name        = Column(String(32), comment = '用例名称')    
+    id          = Column(Integer, primary_key=True)    
+    name        = Column(String(32), comment = '用例名称')
     
-    suite_name      = Column(String(512), comment = '该case调用的suite名称')    
-    api_name        = Column(String(512), comment = '该case调用的api名称')    
+    case_mode   = Column(String(32), comment = '普通用例的编写模式，值为：api_name or suite_name or manunal')
+        
+    api_name    = Column(String(512), comment = '该case调用的api名称')
+    suite_name  = Column(String(512), comment = '该case调用的suite名称')
+    # manunal
+    glob_var    = Column(String(512), comment = '全局变量（dict）')
+    glob_regx   = Column(String(512), comment = '全局正则表达式（dict）')
     
-    func        = Column(String(512), comment = 'api的引用别名(def)')    
-    #### manunal
-    glob_var        = Column(String(512), comment = '全局变量（dict）')
-    glob_regx       = Column(String(512), comment = '全局正则表达式（dict）')
+    pre_command  = Column(String(512), comment = '测试用例前置条件(list)')
+    url          = Column(String(512), nullable = False, comment = '请求url')
+    method       = Column(String(4), nullable = False, comment = '请求方法(get or post)')
+    headers      = Column(String(1024), comment = '请求头(dict)')
+    body         = Column(String(1024), comment = '请求体(dict or str)')
+    post_command = Column(String(512), comment = '测试用例后置条件(list)')
+    verify       = Column(String(512), comment = '验证条件(list)')
     
-    pre_command     = Column(String(512), comment = '测试用例前置条件(list)')
-    url             = Column(String(512), nullable = False, comment = '请求url')
-    method          = Column(String(4), nullable = False, comment = '请求方法(get or post)')
-    headers        = Column(String(1024), comment = '请求头(dict)')
-    body            = Column(String(1024), comment = '请求体(dict or str)')
-    post_command    = Column(String(512), comment = '测试用例后置条件(list)')
-    verify          = Column(String(512), comment = '验证条件(list)')
+    func        = Column(String(512), comment = 'api的引用别名(def)')
+    
+    # 用例的类型，依据测试集的类型
     test_set_id     = Column(Integer, nullable = False, comment = '隶属于case表-关联case表')
     
     create_time     = Column(DateTime, nullable = False)
     update_time     = Column(DateTime, nullable = False)
 
-    def __init__(self, name, suite_name, api_name, func, url,method,glob_var, glob_regx,headers,body,pre_command, post_command,verify,test_set_id,create_time,update_time):
+    def __init__(self, name, suite_name, api_name, func, url,method, case_mode,
+                 glob_var, glob_regx,headers,body,
+                 pre_command, post_command,verify,
+                 test_set_id,create_time,update_time):
         self.name           = name 
         self.suite_name     = suite_name 
         self.api_name       = api_name 
         self.func           = func 
+        self.case_mode      = case_mode
+        
         #### manunal
         self.glob_var       = glob_var       
         self.glob_regx      = glob_regx
@@ -70,7 +83,7 @@ class HttpCase(db.Model):
           
     
     def __repr__(self):
-        return '<HttpCase %r-%r>' % (self.url,self.id)
+        return '<HttpCase %r>' % (self.id)
         
 
 class CaseRecord(db.Model):
