@@ -89,6 +89,7 @@ class HttpCaseView(MethodView):
                     "method":hcase_data.method,
                     "headers":hcase_data.headers,
                     "body":hcase_data.body,
+                    "files":hcase_data.files,
                     "post_command":hcase_data.post_command,
                     "verify":hcase_data.verify,
                     }, 
@@ -101,7 +102,7 @@ class HttpCaseView(MethodView):
     
     
     def post(self):
-        # POST /manager?tset_id=1case_mode=?   call_api or call_suite or manunal
+        # POST /manager?tset_id=1&case_mode=?   call_api or call_suite or manunal
         param = dict(request.args.items()) 
         j_param = request.json if request.data else request.form.to_dict()
         _query = get_httpcase_query()
@@ -133,7 +134,7 @@ class HttpCaseView(MethodView):
                 for k,v in j_param.items():
                     print(k,v)
                 _ = [args.append(j_param.get(i,"")) for i in ("name", "suite_name", "api_name", "func","url", "method", "case_mode")]
-                _ = [args.append(json.dumps(j_param.get(i, {}))) for i in ("glob_var", "glob_regx", "headers", "body")]   
+                _ = [args.append(json.dumps(j_param.get(i, {}))) for i in ("glob_var", "glob_regx", "headers", "body", "files")]   
                 _ = [args.append(json.dumps(j_param.get(i, []))) for i in ("pre_command", "post_command", "verify")]  
                               
                 args.extend((tset_data.id,now, now))
@@ -166,7 +167,7 @@ class HttpCaseView(MethodView):
                 return jsonify(get_result("", status = False, message = message))
                         
             _ = [setattr(httpcase_data, i, j_param.get(i)) for i in ("name", "suite_name", "api_name", "func","url", "method", "case_mode") if hasattr(httpcase_data, i) and j_param.get(i)]
-            _ = [setattr(httpcase_data, i, json.dumps(j_param.get(i))) for i in("glob_var", "glob_regx", "headers", "body", "pre_command", "post_command", "verify") if hasattr(httpcase_data, i) and j_param.get(i)]            
+            _ = [setattr(httpcase_data, i, json.dumps(j_param.get(i))) for i in("glob_var", "glob_regx", "headers", "body", "files", "pre_command", "post_command", "verify") if hasattr(httpcase_data, i) and j_param.get(i)]            
 #             _ = [setattr(httpcase_data, i, json.dumps(j_param.get(i))) for i in j_param.keys() if hasattr(httpcase_data, i) and j_param.get(i)]
             
             httpcase_data.update_time = now

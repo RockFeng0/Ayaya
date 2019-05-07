@@ -45,7 +45,8 @@ class HttpCase(db.Model):
     url          = Column(String(512), nullable = False, comment = '请求url')
     method       = Column(String(4), nullable = False, comment = '请求方法(get or post)')
     headers      = Column(String(1024), comment = '请求头(dict)')
-    body         = Column(String(1024), comment = '请求体(dict or str)')
+    body         = Column(String(1024), comment = '请求体dict')
+    files        = Column(String(1024), comment = '上传的文件dict')
     post_command = Column(String(512), comment = '测试用例后置条件(list)')
     verify       = Column(String(512), comment = '验证条件(list)')
     
@@ -58,7 +59,7 @@ class HttpCase(db.Model):
     update_time     = Column(DateTime, nullable = False)
 
     def __init__(self, name, suite_name, api_name, func, url,method, case_mode,
-                 glob_var, glob_regx,headers,body,
+                 glob_var, glob_regx,headers,body,files,
                  pre_command, post_command,verify,
                  test_set_id,create_time,update_time):
         self.name           = name 
@@ -75,6 +76,7 @@ class HttpCase(db.Model):
         self.method         = method
         self.headers        = headers
         self.body           = body
+        self.files          = files
         self.post_command   = post_command
         self.verify         = verify
         self.test_set_id    = test_set_id 
