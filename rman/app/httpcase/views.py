@@ -22,6 +22,7 @@ import datetime, json
 from flask import request, jsonify
 from flask_login import login_required
 from flask.views import MethodView
+from functools import reduce
 
 from rman.app import APP_ENV
 from rman.app.httpcase import httpcase
@@ -45,8 +46,7 @@ class HttpCaseView(MethodView):
     def get(self):
         # GET /manager?page=1&size=10&tset_?=?&hcase_?=?
         # 获取指定测试集所有接口测试用例: GET /manager?page=1&size=10&tset_id=1
-        # 获取指定测试集所有get请求: GET /manager?page=1&size=10&tset_id=1&hcase_method=get
-        print("!!!!")
+        # 获取指定测试集所有get请求: GET /manager?page=1&size=10&tset_id=1&hcase_method=get        
         param = dict(request.args.items())
         _query_hcase_join_tset = get_hcase_join_tset_query()
         
@@ -102,50 +102,80 @@ class HttpCaseView(MethodView):
     
     
     def post(self):
-        # POST /manager?tset_id=1&case_mode=?   call_api or call_suite or manunal
+        # POST /manager?tset_id=1
+        '''        
+            @note:  normal case --> name & case_mode(call_api or call_suite or manunal)
+            @note:  suite case --> name & api_name
+            @note:  api case --> manunal & func
+        '''
         param = dict(request.args.items()) 
         j_param = request.json if request.data else request.form.to_dict()
         _query = get_httpcase_query()
         _query_tset = get_tset_query()       
         now = datetime.datetime.now()
         
-        tset_id = param.get("tset_id")
-        case_mode = param.get("case_mode")
+        tset_id = param.get("tset_id")        
         tset_data = _query_tset.filter_by(id = tset_id).first()
+        if not tset_data:
+            return jsonify(get_result("", status = False, message = "Not found the data with url parameter [tset_id={0}]".format(tset_id)))        
+        case_type = tset_data.type
+                    
+        _check_param = ("url", "method")
+        _is_real_true = lambda x,y: bool(j_param.get(x)) and bool(j_param.get(y))
+        manunal_check = reduce(_is_real_true,_check_param)
         
-        try:
-            if case_mode == "manunal":
-                for param in ("url", "method"):
-                    _param = j_param.get(param)
-                    if not _param:
-                        return jsonify(get_result("", status = False, message = 'Parameter [{0}] should not be null.'.format(param)))
-                        
-            status = True            
-            if not tset_data:
-                status = False
-                message = "Not found the testset with id: {0}".format(tset_id)
+        name = j_param.get("name")
+        case_mode = j_param.get("case_mode")
+        func = j_param.get("func")
+        api_name = j_param.get("api_name")
+        
+        if case_type == "api":
+            if not manunal_check or not func:
+                return jsonify(get_result("", status = False, message = 'Invalid API-Case without parameter [url or method or func].'))
                             
-            else:
-                # string:  name, suite_name, api_name, func,url, method
-                # dict:    glob_var, glob_regx, headers, body
-                # list:    pre_command, post_command, verify                
+        elif case_type == "case":
+            if not name or not case_mode:
+                return jsonify(get_result("", status = False, message = 'Invalid Normal-Case without parameter [name or case_mode].'))
+            
+            if case_mode == 'call_api' and not api_name:
+                return jsonify(get_result("", status = False, message = 'Invalid Normal-Case without parameter [api_name].'))
+            elif case_mode == 'call_suite' and not j_param.get("suite_name"):
+                return jsonify(get_result("", status = False, message = 'Invalid Normal-Case without parameter [suite_name].'))
+            elif not manunal_check:
+                return jsonify(get_result("", status = False, message = 'Invalid Normal-Case without parameter [url or method].'))
+                  
+        elif case_type == "suite":
+            if not name or not api_name:
+                return jsonify(get_result("", status = False, message = 'Invalid Suite-Case without parameter [name or api_name].'))
+        
+        else:
+            return jsonify(get_result("", status = False, message = 'Invalid Http-Case from rtsf-http.'))
+        
+                            
+        try:    
+            # string:  name, suite_name, api_name, func,url, method
+            # dict:    glob_var, glob_regx, headers, body, files
+            # list:    pre_command, post_command, verify 
+            
+            status = True                          
+            
+            args = []                
+            for k,v in j_param.items():
+                print(k,v)
                 
-                args = []                
-                for k,v in j_param.items():
-                    print(k,v)
-                _ = [args.append(j_param.get(i,"")) for i in ("name", "suite_name", "api_name", "func","url", "method", "case_mode")]
-                _ = [args.append(json.dumps(j_param.get(i, {}))) for i in ("glob_var", "glob_regx", "headers", "body", "files")]   
-                _ = [args.append(json.dumps(j_param.get(i, []))) for i in ("pre_command", "post_command", "verify")]  
-                              
-                args.extend((tset_data.id,now, now))
-                _httpcase = HttpCase(*args)
-                
-                db.session.add(_httpcase)
-                db.session.commit()
-                                               
-                message = "add success."
-                db.session.flush()
-                db.session.commit()
+            _ = [args.append(j_param.get(i,"")) for i in ("name", "suite_name", "api_name", "func","url", "method", "case_mode")]
+            _ = [args.append(json.dumps(j_param.get(i, {}))) for i in ("glob_var", "glob_regx", "headers", "body", "files")]   
+            _ = [args.append(json.dumps(j_param.get(i, []))) for i in ("pre_command", "post_command", "verify")]  
+                          
+            args.extend((tset_data.id,now, now))
+            _httpcase = HttpCase(*args)
+            
+            db.session.add(_httpcase)
+            db.session.commit()
+                                           
+            message = "add success."
+            db.session.flush()
+            db.session.commit()
         except Exception as e:
             message = str(e)
             status = False
