@@ -128,7 +128,7 @@ class HttpCaseView(MethodView):
         case_mode = j_param.get("case_mode")
         func = j_param.get("func")
         api_name = j_param.get("api_name")
-        
+                
         if case_type == "api":
             if not manunal_check or not func:
                 return jsonify(get_result("", status = False, message = 'Invalid API-Case without parameter [url or method or func].'))
@@ -141,7 +141,7 @@ class HttpCaseView(MethodView):
                 return jsonify(get_result("", status = False, message = 'Invalid Normal-Case without parameter [api_name].'))
             elif case_mode == 'call_suite' and not j_param.get("suite_name"):
                 return jsonify(get_result("", status = False, message = 'Invalid Normal-Case without parameter [suite_name].'))
-            elif not manunal_check:
+            elif case_mode == 'manunal' and not manunal_check:
                 return jsonify(get_result("", status = False, message = 'Invalid Normal-Case without parameter [url or method].'))
                   
         elif case_type == "suite":
@@ -160,8 +160,8 @@ class HttpCaseView(MethodView):
             status = True                          
             
             args = []                
-            for k,v in j_param.items():
-                print(k,v)
+#             for k,v in j_param.items():
+#                 print(k,v)
                 
             _ = [args.append(j_param.get(i,"")) for i in ("name", "suite_name", "api_name", "func","url", "method", "case_mode")]
             _ = [args.append(json.dumps(j_param.get(i, {}))) for i in ("glob_var", "glob_regx", "headers", "body", "files")]   
@@ -205,12 +205,10 @@ class HttpCaseView(MethodView):
             status = True
             message = "update success."
             db.session.flush()
-            db.session.commit()   
-            print(5)           
+            db.session.commit()
         except Exception as e:
             message = str(e)
             status = False
-        print(6)  
         return jsonify(get_result("", status = status, message = message))       
     
     def delete(self):
