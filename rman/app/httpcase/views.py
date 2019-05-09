@@ -41,6 +41,19 @@ def get_httpcase_query():
 def get_hcase_join_tset_query():
     return db.session.query(HttpCase, TestSet).join(TestSet, HttpCase.test_set_id == TestSet.id)    
 
+@httpcase.route("/distinct/<column>", methods=["GET"])
+def distinct_col(column):
+    # GET /httpcase/distinct/func   
+    
+    if hasattr(HttpCase, column):
+        _query = get_httpcase_query()    
+        lines  = _query.with_entities(getattr(HttpCase, column)).distinct().all()    
+    else:
+        return jsonify(get_result("", status=False, message = "unknow column [{0}]".format(column)))
+    
+    result = [{column: line[0]} for line in lines if line and line[0]]    
+    return jsonify(get_result(result, message = "get all distinct data success."))
+
 class HttpCaseView(MethodView):
     
     def get(self):
@@ -49,10 +62,16 @@ class HttpCaseView(MethodView):
         # 获取指定测试集所有get请求: GET /manager?page=1&size=10&tset_id=1&hcase_method=get        
         param = dict(request.args.items())
         _query_hcase_join_tset = get_hcase_join_tset_query()
+        print(param)
+        tset_like_conditions = {getattr(TestSet,i).like("{0}%".format(param.get("tset_%s" %i))) for i in ('name',) if param.get("tset_%s" %i)}
+        hcase_like_conditions = {getattr(HttpCase,i).like("{0}%".format(param.get("hcase_%s" %i))) for i in ('name','func') if param.get("hcase_%s" %i)}
+        like_conditions =  tset_like_conditions.union(hcase_like_conditions)
         
-        tset_conditions = {getattr(TestSet,i) == param.get("tset_%s" %i) for i in ('id', 'name', 'responsible', 'tester', 'type') if param.get("tset_%s" %i)}
-        http_conditions = {getattr(HttpCase, i) == param.get("hcase_%s" %i) for i in ('id', 'name', 'url', 'method', 'api_name', 'suite_name') if param.get("hcase_%s" %i)}
-        conditions = tset_conditions.union(http_conditions)                
+        tset_conditions = {getattr(TestSet,i) == param.get("tset_%s" %i) for i in ('id', 'responsible', 'tester', 'type') if param.get("tset_%s" %i)}
+        http_conditions = {getattr(HttpCase, i) == param.get("hcase_%s" %i) for i in ('id', 'url', 'method', 'api_name', 'suite_name') if param.get("hcase_%s" %i)}
+        equal_conditions = tset_conditions.union(http_conditions)
+        
+        conditions = like_conditions.union(equal_conditions)                
         base_conditions = _query_hcase_join_tset.filter(*conditions).order_by(TestSet.update_time.desc())
                 
         page = int(param.get("page", 1))
@@ -111,47 +130,18 @@ class HttpCaseView(MethodView):
         param = dict(request.args.items()) 
         j_param = request.json if request.data else request.form.to_dict()
         _query = get_httpcase_query()
-        _query_tset = get_tset_query()       
+        _query_tset = get_tset_query()
         now = datetime.datetime.now()
         
         tset_id = param.get("tset_id")        
         tset_data = _query_tset.filter_by(id = tset_id).first()
         if not tset_data:
             return jsonify(get_result("", status = False, message = "Not found the data with url parameter [tset_id={0}]".format(tset_id)))        
-        case_type = tset_data.type
-                    
-        _check_param = ("url", "method")
-        _is_real_true = lambda x,y: bool(j_param.get(x)) and bool(j_param.get(y))
-        manunal_check = reduce(_is_real_true,_check_param)
         
-        name = j_param.get("name")
-        case_mode = j_param.get("case_mode")
-        func = j_param.get("func")
-        api_name = j_param.get("api_name")
-                
-        if case_type == "api":
-            if not manunal_check or not func:
-                return jsonify(get_result("", status = False, message = 'Invalid API-Case without parameter [url or method or func].'))
-                            
-        elif case_type == "case":
-            if not name or not case_mode:
-                return jsonify(get_result("", status = False, message = 'Invalid Normal-Case without parameter [name or case_mode].'))
-            
-            if case_mode == 'call_api' and not api_name:
-                return jsonify(get_result("", status = False, message = 'Invalid Normal-Case without parameter [api_name].'))
-            elif case_mode == 'call_suite' and not j_param.get("suite_name"):
-                return jsonify(get_result("", status = False, message = 'Invalid Normal-Case without parameter [suite_name].'))
-            elif case_mode == 'manunal' and not manunal_check:
-                return jsonify(get_result("", status = False, message = 'Invalid Normal-Case without parameter [url or method].'))
-                  
-        elif case_type == "suite":
-            if not name or not api_name:
-                return jsonify(get_result("", status = False, message = 'Invalid Suite-Case without parameter [name or api_name].'))
-        
-        else:
-            return jsonify(get_result("", status = False, message = 'Invalid Http-Case from rtsf-http.'))
-        
-                            
+        check_result = self._check_form(tset_data.type, j_param)
+        if check_result:
+            return jsonify(check_result)
+                                           
         try:    
             # string:  name, suite_name, api_name, func,url, method
             # dict:    glob_var, glob_regx, headers, body, files
@@ -185,17 +175,22 @@ class HttpCaseView(MethodView):
         # PUT /manager?id=32342
         param = dict(request.args.items())
         j_param = request.json if request.data else request.form.to_dict()
-        _query = get_httpcase_query()                
+        _query = get_httpcase_query()
+        _query_tset = get_tset_query()              
         now = datetime.datetime.now()
         
-        try:
-             
-            httpcase_data = _query.filter_by(id = param.get("id")).first()
+        httpcase_data = _query.filter_by(id = param.get("id")).first()
             
-            if not httpcase_data:
-                message = "do not have the httpcase with id({})".format(param.get("id"))
-                return jsonify(get_result("", status = False, message = message))
-                        
+        if not httpcase_data:
+            message = "do not have the httpcase with id({})".format(param.get("id"))
+            return jsonify(get_result("", status = False, message = message))
+        
+        tset_data = _query_tset.filter_by(id = httpcase_data.test_set_id).first()
+        check_result = self._check_form(tset_data.type, j_param)
+        if check_result:
+            return jsonify(check_result)
+        
+        try:                        
             _ = [setattr(httpcase_data, i, j_param.get(i)) for i in ("name", "suite_name", "api_name", "func","url", "method", "case_mode") if hasattr(httpcase_data, i) and j_param.get(i)]
             _ = [setattr(httpcase_data, i, json.dumps(j_param.get(i))) for i in("glob_var", "glob_regx", "headers", "body", "files", "pre_command", "post_command", "verify") if hasattr(httpcase_data, i) and j_param.get(i)]            
 #             _ = [setattr(httpcase_data, i, json.dumps(j_param.get(i))) for i in j_param.keys() if hasattr(httpcase_data, i) and j_param.get(i)]
@@ -238,8 +233,43 @@ class HttpCaseView(MethodView):
             status = False
         
         return jsonify(get_result(result, status = status,message = message))
-
-
+    
+    def _check_form(self, case_type, j_param):
+                            
+        _check_param = ("url", "method")
+        _is_real_true = lambda x,y: bool(j_param.get(x)) and bool(j_param.get(y))
+        manunal_check = reduce(_is_real_true,_check_param)
+        
+        name = j_param.get("name")
+        case_mode = j_param.get("case_mode")
+        func = j_param.get("func")
+        api_name = j_param.get("api_name")
+                
+        if case_type == "api":
+            if not manunal_check or not func:
+                return get_result("", status = False, message = 'Invalid API-Case without parameter [url or method or func].')
+                            
+        elif case_type == "case":
+            if not name or not case_mode:
+                return get_result("", status = False, message = 'Invalid Normal-Case without parameter [name or case_mode].')
+            
+            if not case_mode in ("call_api", "call_suite", "manunal"):
+                return get_result("", status = False, message = 'Invalid Normal-Case, parameter [case_mode] should be in (call_api, call_suite, manunal).')
+        
+            if case_mode == 'call_api' and not api_name:
+                return get_result("", status = False, message = 'Invalid Normal-Case without parameter [api_name].')
+            elif case_mode == 'call_suite' and not j_param.get("suite_name"):
+                return get_result("", status = False, message = 'Invalid Normal-Case without parameter [suite_name].')
+            elif case_mode == 'manunal' and not manunal_check:
+                return get_result("", status = False, message = 'Invalid Normal-Case without parameter [url or method].')                
+            
+        elif case_type == "suite":
+            if not name or not api_name:
+                return get_result("", status = False, message = 'Invalid Suite-Case without parameter [name or api_name].')
+        
+        else:
+            return get_result("", status = False, message = 'Invalid Http-Case from rtsf-http.')
+        
 class CaseRecordView(MethodView):
     
     def get(self):

@@ -55,9 +55,9 @@ def distinct_col():
     param = dict(request.args.items())  
     _query = get_tset_query()    
     conditions = {i: param.get(i) for i in ('name', 'responsible', 'tester', 'type') if param.get(i)}    
-    lines  = _query.filter_by(**conditions).with_entities(TestSet.id, TestSet.name, TestSet.responsible, TestSet.tester, TestSet.type).distinct().all()   
+    lines  = _query.filter_by(**conditions).with_entities(TestSet.id, TestSet.name, TestSet.responsible, TestSet.tester, TestSet.type, TestSet.suite_def).distinct().all()   
     
-    result = [{"id": line[0], "name": line[1], "responsible": line[2], "tester": line[3], "type": line[4]} for line in lines if line]
+    result = [{"id": line[0], "name": line[1], "responsible": line[2], "tester": line[3], "type": line[4], "suite_def": line[5]} for line in lines if line]
     return jsonify(get_result(result, message = "get all distinct data success."))
 
 class TestSetView(MethodView):
@@ -70,9 +70,10 @@ class TestSetView(MethodView):
         param = dict(request.args.items())
         _query_tset_join_project = get_tset_join_project_query()
         
-        tset_conditions = {getattr(TestSet, i) == param.get("tset_%s" %i) for i in ('id', 'name', 'responsible', 'tester', 'type') if param.get("tset_%s" %i)}
+        name_like_conditions = {getattr(TestSet, i).like("{0}%".format(param.get("tset_%s" %i))) for i in ('name',) if param.get("tset_%s" %i)}                
+        tset_conditions = {getattr(TestSet, i) == param.get("tset_%s" %i) for i in ('id', 'responsible', 'tester', 'type') if param.get("tset_%s" %i)}        
         proj_conditions = {getattr(Project, i) == param.get("proj_%s" %i) for i in ('id', 'name', 'module') if param.get("proj_%s" %i)}
-        conditions = tset_conditions.union(proj_conditions)
+        conditions = name_like_conditions.union(tset_conditions.union(proj_conditions))
         base_conditions = _query_tset_join_project.filter(*conditions).order_by(TestSet.update_time.desc())
         
         page = int(param.get("page", 1))
