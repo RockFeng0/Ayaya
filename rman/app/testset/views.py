@@ -49,15 +49,19 @@ def get_tset_join_project_query():
 def get_httpcase_query():
     return db.session.query(HttpCase)
 
-@testset.route("/get_distinct", methods=["GET"])
-def distinct_col():
-    # GET /testset/get_distinct?tester=xxxx    
+@testset.route("/distinct/<column>", methods=["GET"])
+def distinct_col(column):
+    # GET /testset/distinct/type?name=xxxx    
     param = dict(request.args.items())  
-    _query = get_tset_query()    
-    conditions = {i: param.get(i) for i in ('name', 'responsible', 'tester', 'type') if param.get(i)}    
-    lines  = _query.filter_by(**conditions).with_entities(TestSet.id, TestSet.name, TestSet.responsible, TestSet.tester, TestSet.type, TestSet.suite_def).distinct().all()   
+        
+    if hasattr(TestSet, column):
+        _query = get_tset_query()
+        conditions = {i: param.get(i) for i in ('name', 'responsible', 'tester', 'type') if param.get(i)} 
+        lines  = _query.filter_by(**conditions).with_entities(getattr(TestSet, column)).distinct().all()    
+    else:
+        return jsonify(get_result("", status=False, message = "unknow column [{0}]".format(column)))
     
-    result = [{"id": line[0], "name": line[1], "responsible": line[2], "tester": line[3], "type": line[4], "suite_def": line[5]} for line in lines if line]
+    result = [{column: line[0]} for line in lines if line and line[0]]    
     return jsonify(get_result(result, message = "get all distinct data success."))
 
 class TestSetView(MethodView):
