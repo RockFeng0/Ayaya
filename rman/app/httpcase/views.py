@@ -175,8 +175,10 @@ class HttpCaseView(MethodView):
         # PUT /manager?id=32342
         param = dict(request.args.items())
         j_param = request.json if request.data else request.form.to_dict()
+        
+        print(j_param)
         _query = get_httpcase_query()
-        _query_tset = get_tset_query()              
+        _query_tset = get_tset_query()
         now = datetime.datetime.now()
         
         httpcase_data = _query.filter_by(id = param.get("id")).first()
@@ -193,8 +195,8 @@ class HttpCaseView(MethodView):
         try:
             
             _ = [setattr(httpcase_data, i, j_param.get(i, "")) for i in ("name", "suite_name", "api_name", "func","url", "method", "case_mode") if i in j_param]
-            _ = [setattr(httpcase_data, i, j_param.get(i, {})) for i in ("glob_var", "glob_regx", "headers", "body", "files") if i in j_param]
-            _ = [setattr(httpcase_data, i, j_param.get(i, [])) for i in ("pre_command", "post_command", "verify")  if i in j_param]
+            _ = [setattr(httpcase_data, i, json.dumps(j_param.get(i, {}))) for i in ("glob_var", "glob_regx", "headers", "body", "files") if i in j_param]
+            _ = [setattr(httpcase_data, i, json.dumps(j_param.get(i, []))) for i in ("pre_command", "post_command", "verify")  if i in j_param]
 #             _ = [setattr(httpcase_data, i, json.dumps(j_param.get(i))) for i in j_param.keys() if hasattr(httpcase_data, i) and j_param.get(i)]
             
             httpcase_data.update_time = now
