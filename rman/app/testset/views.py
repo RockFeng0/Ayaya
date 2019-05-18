@@ -19,6 +19,8 @@ Provide a function for the automation test
 '''
 
 import datetime
+from functools import reduce
+
 from flask import request, jsonify
 from flask_login import login_required
 from flask.views import MethodView
@@ -73,11 +75,13 @@ class TestSetView(MethodView):
         # 获取所有 suite: GET /manager?page=1&size=10&tset_type=suite
         param = dict(request.args.items())
         _query_tset_join_project = get_tset_join_project_query()
-        
-        name_like_conditions = {getattr(TestSet, i).like("{0}%".format(param.get("tset_%s" %i))) for i in ('name',) if param.get("tset_%s" %i)}                
-        tset_conditions = {getattr(TestSet, i) == param.get("tset_%s" %i) for i in ('id', 'responsible', 'tester', 'type') if param.get("tset_%s" %i)}        
+                       
+        name_like_conditions = {getattr(TestSet, i).like("{0}%".format(param.get("tset_%s_like" %i))) for i in ('name',) if param.get("tset_%s_like" %i)}                        
+        tset_conditions = {getattr(TestSet, i) == param.get("tset_%s" %i) for i in ('id', 'name', 'responsible', 'tester', 'type') if param.get("tset_%s" %i)}        
         proj_conditions = {getattr(Project, i) == param.get("proj_%s" %i) for i in ('id', 'name', 'module') if param.get("proj_%s" %i)}
-        conditions = name_like_conditions.union(tset_conditions.union(proj_conditions))
+
+        f = lambda x,y: x.union(y)
+        conditions = reduce(f, (name_like_conditions, tset_conditions, proj_conditions))
         base_conditions = _query_tset_join_project.filter(*conditions).order_by(TestSet.update_time.desc())
         
         page = int(param.get("page", 1))
@@ -85,8 +89,7 @@ class TestSetView(MethodView):
         total = base_conditions.count()
         pagination = base_conditions.paginate(page = page, per_page= size, error_out=False)
         
-        result = {"total": total, "testsets":[]}
-               
+        result = {"total": total, "testsets":[]}         
         for pg in pagination.items:            
             tset_data = pg.TestSet
             proj_data = pg.Project
@@ -149,13 +152,14 @@ class TestSetView(MethodView):
                      j_param.get("tester",'administrator'),
                      j_param.get("type"),
                      j_param.get("suite_def"),
-                     now, now)                
+                     now, now)
+                             
                 db.session.add(_testset)
                 db.session.commit()
-                
+                                
                 _tset_relation = TestsetProjectRelation(project_data.id, _testset.id, now, now)
-                db.session.add(_tset_relation) 
-                               
+                db.session.add(_tset_relation)                      
+                         
                 message = "add success."
                 db.session.flush()
                 db.session.commit()
