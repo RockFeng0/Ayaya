@@ -20,24 +20,15 @@ Provide a function for the automation test
 
 from rman.app import db
 from sqlalchemy import Column, Integer, String, SmallInteger, DateTime, Date, Time
+from httprunner.task import TestSuite
     
 class HttpCase(db.Model):
-    ''' http reqeusts case   
-    @note:  normal case --> name & case_mode(api_name or suite_name or manunal)
-    @note:  suite case --> name & api_name
-    @note:  api case --> manunal & func
-    '''
+    ''' http reqeusts case '''
 
     __tablename__ = 't_rtsf_httpcase'
         
     id          = Column(Integer, primary_key=True)    
-    name        = Column(String(32), comment = '用例名称')
     
-    case_mode   = Column(String(32), comment = '普通用例的编写模式，值为：api_name or suite_name or manunal')
-        
-    api_name    = Column(String(512), comment = '该case调用的api名称')
-    suite_name  = Column(String(512), comment = '该case调用的suite名称')
-    # manunal
     glob_var    = Column(String(512), comment = '全局变量（dict）')
     glob_regx   = Column(String(512), comment = '全局正则表达式（dict）')
     
@@ -49,41 +40,13 @@ class HttpCase(db.Model):
     files        = Column(String(1024), comment = '上传的文件dict')
     post_command = Column(String(512), comment = '测试用例后置条件(list)')
     verify       = Column(String(512), comment = '验证条件(list)')
-    
-    func        = Column(String(512), comment = 'api的引用别名(def)')
-    
-    # 用例的类型，依据测试集的类型
-    test_set_id     = Column(Integer, nullable = False, comment = '隶属于case表-关联case表')
-    
+        
     create_time     = Column(DateTime, nullable = False)
     update_time     = Column(DateTime, nullable = False)
 
-    def __init__(self, name, suite_name, api_name, func, url,method, case_mode,
-                 glob_var, glob_regx,headers,body,files,
-                 pre_command, post_command,verify,
-                 test_set_id,create_time,update_time):
-        self.name           = name 
-        self.suite_name     = suite_name 
-        self.api_name       = api_name 
-        self.func           = func 
-        self.case_mode      = case_mode
-        
-        #### manunal
-        self.glob_var       = glob_var       
-        self.glob_regx      = glob_regx
-        self.pre_command    = pre_command
-        self.url            = url
-        self.method         = method
-        self.headers        = headers
-        self.body           = body
-        self.files          = files
-        self.post_command   = post_command
-        self.verify         = verify
-        self.test_set_id    = test_set_id 
-        self.create_time    = create_time
-        self.update_time    = update_time
-          
-    
+    def __init__(self, **kwargs):
+        _ = [setattr(self, k, v) for k,v in kwargs.items()]    
+           
     def __repr__(self):
         return '<HttpCase %r>' % (self.id)
         
@@ -101,27 +64,29 @@ class CaseRecord(db.Model):
     fail_cases  = Column(Integer)
      
     def __init__(self, exec_date, exec_time, duration, total_cases, pass_cases, fail_cases):        
-        self.exec_date      = exec_date
-        self.exec_time      = exec_time
-        self.duration       = duration
-        self.total_cases    = total_cases
-        self.pass_cases     = pass_cases
-        self.fail_cases     = fail_cases
-     
-#     def has_testsets(self, testset_obj):
-#         return self.testsets.filter(TestSet.proj_name == testset_obj.proj_name).count() > 0
-#      
-#     def append_testsets(self, testset_obj):
-#         if not self.has_testsets(testset_obj):
-#             self.testsets.append(testset_obj)
-#             return self
-#      
-#     def remove_testsets(self, testset_obj):
-#         if self.has_testsets(testset_obj):
-#             self.testsets.remove(testset_obj)
-#      
-#     def get_testsets(self):
-#         return TestSet.query.join(Run).filter(TestSet.run_id == self.id).all()
+        pass
              
     def __repr__(self):
         return '<CaseRecord %r>' % (self.id)
+
+from rman.app.manager.models import ManagerQuerys, TestCases, TestApis, TestSuites, TestSuiteApiRelation
+
+class HttpCaseQuerys(ManagerQuerys):    
+    
+    @staticmethod
+    def t_hcase():
+        return db.session.query(HttpCase)
+    
+    @staticmethod
+    def j_tcase_hcase():
+        return db.session.query(TestCases, HttpCase).outerjoin(HttpCase, TestCases.call_manunal_id == HttpCase.id)
+    
+    @staticmethod
+    def j_api_hcase():
+        return db.session.query(TestApis, HttpCase).join(HttpCase, TestApis.call_manunal_id == HttpCase.id)
+    
+    @staticmethod
+    def j_suite_relation_api():
+        return db.session.query(TestSuiteApiRelation.name, TestApis.api_def).join(TestApis, TestSuiteApiRelation.api_id == TestApis.id)                
+                
+        

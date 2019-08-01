@@ -25,6 +25,9 @@ cors = CORS()
 login_manager = LoginManager()
 bcrypt = Bcrypt()
 
+def get_result(result, status=True, message="success" ):
+    return {"status":status, "message":message,"result":result}
+
 def create_app():
     app = Flask(__name__)
     configuration = configs[APP_ENV]
@@ -42,16 +45,16 @@ def create_app():
         if module_switch:
             try:
                 obj = importlib.import_module("rman.app.{0}".format(module_name))
-                app.register_blueprint(getattr(obj,module_name), url_prefix = '/{}'.format(module_name))
+                m_name = module_name.split('.')[-1]
+                app.register_blueprint(getattr(obj,m_name), url_prefix = '/{}'.format(m_name))
             except Exception:
-                logger.error(u'**** {0}\t module[{1}]'.format('fail', module_name), exc_info = True)
+                logger.error(u'**** {0}\t module[{1}]'.format('fail', m_name), exc_info = True)
             else:
-                logger.info(u'**** {0}\t module[{1}]'.format('pass', module_name))
+                logger.info(u'**** {0}\t module[{1}]'.format('pass', m_name))
 
     return app
 
 APP = create_app()
-
 
 # 加载顶层视图函数，缺少下面的语句会导致views中的视图函数注册失败
 from .views import *
