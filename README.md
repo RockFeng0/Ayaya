@@ -23,6 +23,9 @@ sh deploy.sh
 cd /opt/deploy/rock4tools/rtsf-manager
 # 启动
 sh start.sh
+
+# 返回正常，说明启动成功
+curl http://127.0.0.1:5004/httpcase/tset
 ```
 
 # 测试集列表
