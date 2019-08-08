@@ -12,6 +12,19 @@
 
 
 
+# 安装和部署
+
+1. 下载rtsf-manager.zip包和deploy.sh, 放在同一目录下
+2. 执行命令:
+
+```
+# 部署和安装依赖
+sh deploy.sh
+cd /opt/deploy/rock4tools/rtsf-manager
+# 启动
+sh start.sh
+```
+
 # 测试集列表
 
 - 获取所有项目的测试集    
