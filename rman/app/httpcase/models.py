@@ -20,7 +20,6 @@ Provide a function for the automation test
 
 from rman.app import db
 from sqlalchemy import Column, Integer, String, SmallInteger, DateTime, Date, Time
-from httprunner.task import TestSuite
     
 class HttpCase(db.Model):
     ''' http reqeusts case '''
