@@ -12,7 +12,7 @@
 
 
 
-# 安装和部署
+# rtsf-manager 后台安装和部署
 
 1. 下载rtsf-manager.zip包和deploy.sh, 放在同一目录下
 2. 执行命令:
@@ -27,6 +27,9 @@ sh start.sh
 # 返回正常，说明启动成功
 curl http://127.0.0.1:5004/httpcase/tset
 ```
+
+
+
 
 # 测试集列表
 
