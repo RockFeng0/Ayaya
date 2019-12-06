@@ -50,24 +50,6 @@ class HttpCase(db.Model):
         return '<HttpCase %r>' % (self.id)
         
 
-class CaseRecord(db.Model):
-    ''' Record the running cases '''
-    __tablename__ = 't_rtsf_case_record'
-     
-    id          = Column(Integer, primary_key=True)
-    exec_date   = Column(Date)
-    exec_time   = Column(Time)
-    duration    = Column(Integer)
-    total_cases = Column(Integer)
-    pass_cases  = Column(Integer)
-    fail_cases  = Column(Integer)
-     
-    def __init__(self, exec_date, exec_time, duration, total_cases, pass_cases, fail_cases):        
-        pass
-             
-    def __repr__(self):
-        return '<CaseRecord %r>' % (self.id)
-
 from rman.app.manager.models import ManagerQuerys, TestCases, TestApis, TestSuites, TestSuiteApiRelation
 
 class HttpCaseQuerys(ManagerQuerys):    

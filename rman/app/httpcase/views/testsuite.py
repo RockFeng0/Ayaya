@@ -50,9 +50,9 @@ class TestApiView(MethodView):
             "pj_id": project_id,
             "pj_name": proj_data.name,
             "pj_module_name": proj_data.module,
-            "tset_name": "xxx",
-            "tset_responsible": "xxx",
-            "tset_tester": "xxx",            
+            "tset_name": "administrator",
+            "tset_responsible": "administrator",
+            "tset_tester": "administrator",            
             "suites": [],
         }
         suite_datas = _query_suite.filter_by(project_id = project_id).all()

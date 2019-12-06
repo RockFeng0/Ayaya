@@ -18,42 +18,27 @@ Provide a function for the automation test
 
 '''
 
-from celery.schedules import crontab
-
 class Config(object):    
     
     CELERY_TIMEZONE='Asia/Shanghai'
     # CELERY_TIMEZONE='UTC'                             
         
     CELERY_IMPORTS = (
-        'bztest.tasks.task1',
-        'bztest.tasks.check_daily',
-        'bztest.tasks.check_birthday',
-        "bztest.tasks.http_test",
+        "rman.tasks.run_case.r_http",
     )
     
-    # schedules
-#     CELERYBEAT_SCHEDULE = {
-#         'schedule_daily_check': {
-#             'task': 'bztest.tasks.check_daily.run_daily_check',
-#             'schedule': crontab(hour=16, minute=25),
-#             'kwargs': {"debug":True}
-#         },
-#         'schedule_birthday_check': {
-#             'task': 'bztest.tasks.check_birthday.run_birthday_check',
-#             'schedule': crontab(hour=10, minute=10),
-#             'kwargs': {"is_check_today":True, "debug":True}
-#         }
-#     }
 
 class DevConfig(Config):
     
     BROKER_URL = 'redis://:123456@127.0.0.1:6379'
     CELERY_RESULT_BACKEND = 'redis://:123456@127.0.0.1:6379/0'
+#     YAML_CASE_PATH = r"C:\d_disk\auto\buffer\test\rtsf-cases\rman-gen"
+    YAML_CASE_PATH = r"C:\d_disk\auto\buffer\test\rtsf-cases\rtsf-http-test"
     
 class ProdConfig(Config):
     BROKER_URL = 'redis://:58cstest@abc@127.0.0.1:6379'    
     CELERY_RESULT_BACKEND = 'redis://:58cstest@abc@localhost:6379'
+    YAML_CASE_PATH = "/opt/deploy/rock4tools/rtsf-cases/rman-gen"
 
 
 configs = {"production":ProdConfig, "testing":DevConfig}

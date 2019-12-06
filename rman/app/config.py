@@ -39,7 +39,8 @@ class Config(object):
                         "auth":False,
                         "runner": False,
                         "manager":True,
-                        "httpcase":True,                         
+                        "httpcase":True,
+                        "rm_task":True,                         
                     }
     
     @staticmethod
