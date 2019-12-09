@@ -340,17 +340,6 @@ class HttpCaseView(MethodView):
         return jsonify(get_result('', status = status,message = message))
     
     
-        
-class CaseRecordView(MethodView):
-    
-    def get(self):
-        pass
-    
-    def post(self):
-        pass
-    
-    def put(self):
-        pass
 
 if APP_ENV == "production":
     _httpcase_view_manager = login_required(HttpCaseView.as_view('httpcase_view_manager'))
