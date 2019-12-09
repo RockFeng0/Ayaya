@@ -61,7 +61,7 @@ class TestApiView(MethodView):
             _suite = {
                 "id":  suite_data.id,
                 "suite_def": suite_data.suite_def,
-                "cases": [],             
+                "cases": [],
             }
             case_datas = _query_suite_relation_api.filter(TestSuiteApiRelation.suite_id == suite_data.id).all()
             for name, api_def in case_datas:                
