@@ -24,4 +24,3 @@ from rman.app import APP
 @APP.route('/', methods = ["GET"])
 def index():
     return send_file('index.html')
-

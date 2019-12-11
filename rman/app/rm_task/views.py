@@ -19,7 +19,7 @@ Provide a function for the automation test
 '''
 
 
-import datetime,os, json
+import datetime,os, json, io
 from flask import request, jsonify,send_file, make_response, url_for
 from flask.views import MethodView
 from redis.exceptions import ConnectionError
@@ -27,7 +27,7 @@ from redis.exceptions import ConnectionError
 from rman.app.rm_task import rm_task
 from rman.app.rm_task.models import Rmtask, db
 
-from rman.tasks import yaml_abs_path
+from rman.tasks.run_case.r_gen import gen_http_project
 from rman.tasks.run_case.r_http import test_http_case
 
 def get_result(result, status=True, message="success" ):
@@ -176,7 +176,7 @@ def http_test():
         tasks.append(task)
     
     for task in tasks:
-        f1 = os.path.join(yaml_abs_path, task.case + ".yaml")    
+        f1 = gen_http_project(task.case)
         if os.path.isfile(f1):
             try:
                 async_task = getattr(test_http_case, "apply_async")(args = (f1,))
@@ -190,7 +190,7 @@ def http_test():
                 task.status = 1
         else:
             # 0-未执行, 1-执行中, 2-执行成功, 3-执行失败, 4-无效脚本 , 5-redis服务异常
-            task.status = 4        
+            task.status = 4
         task.update_time = datetime.datetime.now()
         
     db.session.flush()
@@ -252,14 +252,26 @@ def get_test_report():
     task = _query.filter_by(id = param.get("task_id")).first()
     
     if task and os.path.isfile(task.report_path):
-        return send_file(task.report_path)    
-        
+        return send_file(task.report_path)
+    else:
+        return "404"
+
 @rm_task.route('/caselogs/<log>')
 def get_log(log):
-    lg = os.path.join(yaml_abs_path, 'report/caselogs/%s' %log)
-    resp = make_response(open(lg).read())
-    resp.headers["Content-type"]="text/plain;charset=UTF-8"
-    return resp
+    # GET /rm_task/caselogs/xxx.log?task_id=32342
+    param = request.values
+    _query = get_rmtask_query() 
+    
+    task = _query.filter_by(id = param.get("task_id")).first()
+    
+    if task and os.path.isfile(task.report_path): 
+        report_abs_path = os.path.dirname(task.report_path)   
+        lg = os.path.join(report_abs_path, 'caselogs/%s' %log)
+        resp = make_response(io.open(lg, 'r', encoding='utf-8').read())
+        resp.headers["Content-type"]="text/plain;charset=UTF-8"
+        return resp
+    else:
+        return "404"
     
 
 _rmtask_view_manager = RmtaskView.as_view('rmtask_view_manager')

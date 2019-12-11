@@ -23,6 +23,7 @@ from rman.tasks import celery
 from rtsf.p_executer import TestRunner
 from httpdriver.driver import HttpDriver
 
+
 @celery.task(bind=True)
 def test_http_case(self, case_file):
     runner = TestRunner(runner = HttpDriver).run(case_file)
