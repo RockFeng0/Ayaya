@@ -24,6 +24,9 @@ source ~/.bashrc
 # 选择对应的虚拟环境
 workon py3rtsfpj
 
+# 启动异步任务
+# celery -A rman.tasks worker &
+
 # 启动python web容器gunicorn
 # -b 表示 gunicorn 开发的访问地址 
 # -w 表示开启多少个线程

@@ -15,6 +15,9 @@
 # rtsf-manager 后台安装和部署
 
 1. 下载rtsf-manager.zip包和deploy.sh, 放在同一目录下
+
+> 因为还没发布，临时部署, 所以 APP_ENV = 'testing' ， 不需要修改; 如果有异步任务，还要修改下celeryconfig.py文件
+
 2. 执行命令:
 
 ```
