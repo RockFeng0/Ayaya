@@ -24,6 +24,11 @@
 # 部署和安装依赖
 sh deploy.sh
 cd /opt/deploy/rock4tools/rtsf-manager
+
+# 注意 windows redis 和 celery 只有这个版本适用
+# pip install redis==2.10.6
+# pip install celery==3.1.25 
+
 # 启动
 sh start.sh
 
