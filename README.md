@@ -25,7 +25,7 @@
 sh deploy.sh
 cd /opt/deploy/rock4tools/rtsf-manager
 
-# 注意 windows redis 和 celery 只有这个版本适用
+# 注意 windows redis 和 celery 只有这个版本适用, 而且最好使用python2.7安装
 # pip install redis==2.10.6
 # pip install celery==3.1.25 
 
@@ -38,7 +38,7 @@ curl http://127.0.0.1:5004/httpcase/tset
 3. 异步任务， 测试环境
 
 ```
-- celery消费
+- celery消费，使用的是python2.7运行
 C:\d_disk\auto\git\rtsf-manager>py -2 -m celery -A rman.tasks worker --loglevel debug
 
 - redis服务
