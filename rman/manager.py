@@ -17,9 +17,14 @@ v1.0    Original version to use
 Provide a function for the automation test
 
 '''
-from rman.app import APP, db
+from rman.app import create_app, celery, db
 from flask_migrate import Migrate
 
+APP = create_app()
+
 migrate = Migrate(APP,db)
+celery.set_path()
 
 
+if __name__ == "__main__":
+    APP.run(host='0.0.0.0', port=5000, debug = True)

@@ -18,7 +18,7 @@ Provide a function for the automation test
 
 '''
 from flask import send_file
-from rman.app import APP
+from rman.manager import APP
 
 
 @APP.route('/', methods = ["GET"])

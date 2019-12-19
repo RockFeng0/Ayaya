@@ -18,7 +18,7 @@ Provide a function for the automation test
 
 '''
 
-from rman.tasks import celery
+from rman.app import celery
 
 from rtsf.p_executer import TestRunner
 from httpdriver.driver import HttpDriver

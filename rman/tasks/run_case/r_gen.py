@@ -20,9 +20,11 @@ Provide a function for the automation test
 
 import json, time, os
 from rtsf.p_common import FileSystemUtils, FileUtils
-from rman.tasks import yaml_abs_path
 from rman.app.manager.models import TestSet, TestCases, TestApis, TestSuiteApiRelation
 from rman.app.httpcase.models import HttpCaseQuerys
+# from rman.tasks import yaml_abs_path
+from rman.app import celery
+yaml_abs_path = celery.conf.get("YAML_CASE_PATH")
 
 def gen_http_project(case_name):
         

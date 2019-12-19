@@ -38,8 +38,8 @@ curl http://127.0.0.1:5004/httpcase/tset
 3. 异步任务， 测试环境
 
 ```
-- celery消费，使用的是python2.7运行
-C:\d_disk\auto\git\rtsf-manager>py -2 -m celery -A rman.tasks worker --loglevel debug
+- celery消费
+(test_pj) C:\d_disk\auto\git\rtsf-manager>celery -A rman.manager worker --loglevel info -c 1
 
 - redis服务
 C:\f_disk\BaiduNetdiskDownload\redis-64.3.0.503>redis-server.exe redis.windows.conf

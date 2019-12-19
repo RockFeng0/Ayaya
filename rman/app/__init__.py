@@ -1,3 +1,6 @@
+#! python3
+# -*- encoding: utf-8 -*-
+
 import logging, importlib, sys
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -8,6 +11,7 @@ from flask_bcrypt import Bcrypt
 
 from rman import APP_ENV, log
 from rman.app.config import configs
+from rman.tasks import FactoryCelery
 
 
 from werkzeug.contrib.cache import SimpleCache
@@ -24,6 +28,7 @@ db = SQLAlchemy()
 cors = CORS()
 login_manager = LoginManager()
 bcrypt = Bcrypt()
+celery = FactoryCelery(__name__)
 
 def get_result(result, status=True, message="success" ):
     return {"status":status, "message":message,"result":result}
@@ -39,6 +44,7 @@ def create_app():
     cors.init_app(app, supports_credentials=True)
     login_manager.init_app(app)
     bcrypt.init_app(app)
+    celery.init_app(app)
         
     blue_prints = app.config.get("ALL_BLUE_PRINT")
     for module_name,module_switch in blue_prints.items():        
@@ -54,10 +60,8 @@ def create_app():
 
     return app
 
-APP = create_app()
 
-# 加载顶层视图函数，缺少下面的语句会导致views中的视图函数注册失败
-from .views import *
+
 
 
 

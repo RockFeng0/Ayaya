@@ -34,6 +34,15 @@ class Config(object):
     # flask-login
     REMEMBER_COOKIE_NAME = "token"
     
+    #### Celery 
+    CELERY_TIMEZONE='Asia/Shanghai'
+    # CELERY_TIMEZONE='UTC'                             
+        
+    CELERY_IMPORTS = (
+        "rman.tasks.run_case.r_http",
+    )
+    
+    
     # 蓝图开关
     ALL_BLUE_PRINT = {
                         "auth":False,
@@ -56,11 +65,22 @@ class ProdConfig(Config):
     PORT = 3306
     DATABASE = 'dbcs_qa_biz_rman'    
      
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://{0}:{1}@{2}:{3}/{4}?charset=utf8mb4'.format(USERNAME,PASSWORD,HOST,PORT,DATABASE)   
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://{0}:{1}@{2}:{3}/{4}?charset=utf8mb4'.format(USERNAME,PASSWORD,HOST,PORT,DATABASE)
+    
+    #### Celery
+    BROKER_URL = 'redis://:58cstest@abc@127.0.0.1:6379'    
+    CELERY_RESULT_BACKEND = 'redis://:58cstest@abc@localhost:6379'
+    YAML_CASE_PATH = "/opt/deploy/rock4tools/rtsf-cases/rman-gen"
     
 class DevConfig(Config):
     DEBUG=True
     #print(os.path.join(os.path.dirname(os.path.dirname(__file__)), "rman.db"))
     SQLALCHEMY_DATABASE_URI = "sqlite:///{}".format(os.path.join(os.path.dirname(os.path.dirname(__file__)), "rman.db"))
+    
+    #### Celery
+    BROKER_URL = 'redis://:123456@127.0.0.1:6379'
+    CELERY_RESULT_BACKEND = 'redis://:123456@127.0.0.1:6379/0'
+#     YAML_CASE_PATH = r"C:\d_disk\auto\buffer\test\rtsf-cases\rman-gen"
+    YAML_CASE_PATH = r"C:\d_disk\auto\git\rtsf-manager\rman\logs"
 
 configs = {"production":ProdConfig, "testing":DevConfig}
