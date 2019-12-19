@@ -80,7 +80,7 @@ class DevConfig(Config):
     #### Celery
     BROKER_URL = 'redis://:123456@127.0.0.1:6379'
     CELERY_RESULT_BACKEND = 'redis://:123456@127.0.0.1:6379/0'
-#     YAML_CASE_PATH = r"C:\d_disk\auto\buffer\test\rtsf-cases\rman-gen"
-    YAML_CASE_PATH = r"C:\d_disk\auto\git\rtsf-manager\rman\logs"
+#     YAML_CASE_PATH = r"C:\d_disk\auto\git\rtsf-manager\rman\logs"
+    YAML_CASE_PATH = r"D:\auto\github_repo\rtsf-manager\rman\logs"
 
 configs = {"production":ProdConfig, "testing":DevConfig}
