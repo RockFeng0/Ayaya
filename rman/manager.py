@@ -22,9 +22,9 @@ from flask_migrate import Migrate
 
 APP = create_app()
 
-migrate = Migrate(APP,db)
+migrate = Migrate(APP, db)
 celery.set_path()
 
 
 if __name__ == "__main__":
-    APP.run(host='0.0.0.0', port=5000, debug = True)
+    APP.run(host='0.0.0.0', port=5000, debug=True)
