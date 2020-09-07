@@ -1,3 +1,4 @@
+gitlab
 # rtsf自动化系列框架管理平台
 - 基于python，采用技术栈flask+vue.js,进行前后端分离
 - 具体包括一些flask的扩展,如flask_login,flask_sqlalchemy,flask_migrate等,
