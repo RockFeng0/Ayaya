@@ -5,8 +5,10 @@ Flask-SQLAlchemy>=2.3.2
 Flask-Cors>=3.0.7
 Flask-Login>=0.4.1
 Flask-Bcrypt>=0.7.1
+Flask-RESTful>=0.3.8
 rtsf-http>=2.1.5
 celery>=3.1.25
 redis>=2.10.6
 gunicorn>=19.9.0
+werkzeug==0.16.0
 
