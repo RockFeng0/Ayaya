@@ -1,22 +1,5 @@
 #! python3
 # -*- encoding: utf-8 -*-
-"""
-Current module: rman.log
-
-Rough version history:
-v1.0    Original version to use
-
-********************************************************************
-    @AUTHOR:  罗科峰
-    MAIL:     luokefengds@chinamobile.com
-    RCS:      rman.log,  v1.0 2018年11月22日
-    FROM:   2018年11月22日
-********************************************************************
-======================================================================
-
-Provide a function for the automation test
-
-"""
 
 import os
 import sys

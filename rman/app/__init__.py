@@ -5,7 +5,6 @@ import sys
 import logging
 import importlib
 
-from celery import Celery
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
@@ -27,49 +26,6 @@ logger.addHandler(log.log_handler)
 logger.addHandler(log.err_handler)
 logger.setLevel(logging.DEBUG)
 
-
-def format_resp(body, code="200", message="success"):
-    """
-    响应的格式
-    :param body:  本次请求的响应体
-    :param code: 响应码， 默认值200，表示成功
-    :param message: 响应码的描述， 默认值sucess
-    """
-    return {"code": code, "message": message, "body": body}
-
-
-class FactoryCelery(Celery):
-    def init_app(self, app):
-        """
-        flask 工厂模式，给celery实例对象，添加 应用上下文
-        """
-        self.conf.update(app.config)
-
-        TaskBase = self.Task
-
-        class ContextTask(TaskBase):
-            abstract = True
-
-            def __call__(self, *args, **kwargs):
-                with app.app_context():
-                    return TaskBase.__call__(self, *args, **kwargs)
-
-        self.Task = ContextTask
-        return self
-
-    def set_path(self):
-        r""" use this to fix bugs if raise error:
-
-        (test_pj) C:\d_disk\auto\git\rtsf-manager>celery -A rman.manager worker --loglevel info -c 1
-        Traceback (most recent call last):
-          File "<string>", line 1, in <module>
-          File "c:\users\58-pc\virtualenvs\test_pj\lib\site-packages\billiard\forking.py", line 459, in main
-            self = load(from_parent)
-        ModuleNotFoundError: No module named 'rman'
-        """
-        if not '' in sys.path:
-            sys.path.insert(0, "")
-
 # 创建数据库对象： 处理数据库对象关系映射
 db = SQLAlchemy()
 
@@ -82,9 +38,6 @@ login_manager = LoginManager()
 # 创建加密对象： 处理用户登录密码
 bcrypt = Bcrypt()
 
-# 创建celery对象-： 处理异步任务
-celery = FactoryCelery(__name__)
-
 
 def create_app():
     """
@@ -92,17 +45,16 @@ def create_app():
     """
     app = Flask(__name__)
     configuration = configs[APP_ENV]
-    
+
     # 将配置读取到flask对象中
     app.config.from_object(configuration)
 
     # 对象的初始化
     configuration.init_app(app)
-    db.init_app(app)    
+    db.init_app(app)
     cors.init_app(app, supports_credentials=True)
     login_manager.init_app(app)
     bcrypt.init_app(app)
-    celery.init_app(app)
 
     # 处理蓝图
     blue_prints = app.config.get("ALL_BLUE_PRINT")

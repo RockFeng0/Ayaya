@@ -1,0 +1,22 @@
+- project:
+    module: ''
+    name: "金融中台"
+- case:
+    id: 269
+    name: "身份证检查接口"
+    steps:
+    - request:
+        files: {}
+        headers:
+          Content-Type: application/json
+        method: POST
+        params:
+          appId: TEST
+          channelCode: '999999999999810'
+          idNo: '362320188001010101'
+          platform: HMJ
+          queryClientId: '1234567890'
+          userNo: USER002
+        url: http://172.16.48.186:8104/cap/v1/assist/query-id-card
+    verify:
+    - ${VerifyContain(SYS00001)}
